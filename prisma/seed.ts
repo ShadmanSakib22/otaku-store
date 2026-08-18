@@ -1,14 +1,20 @@
 // prisma/seed.ts
 
+import "dotenv/config";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { hash } from "bcryptjs";
 import {
   PrismaClient,
   ProductStatus,
   ProductType,
   AdminRole,
-} from "@prisma/client";
-import { hash } from "bcryptjs";
+} from "../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaNeon({
+  connectionString: process.env.DATABASE_URL!,
+});
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Starting database seed...");
@@ -196,14 +202,6 @@ async function main() {
       name: "Kodansha",
       slug: "kodansha",
       website: "https://www.kodansha.co.jp/",
-    },
-  });
-
-  const shogakukan = await prisma.publisher.create({
-    data: {
-      name: "Shogakukan",
-      slug: "shogakukan",
-      website: "https://www.shogakukan.co.jp/",
     },
   });
 
