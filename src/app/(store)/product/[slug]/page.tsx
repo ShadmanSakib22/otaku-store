@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/catalogue";
-import { formatPrice } from "@/lib/format";
-import { deriveStockStatus } from "@/lib/stock";
 import { ImageGallery } from "@/components/product/image-gallery";
-import { VariantPicker } from "@/components/product/variant-picker";
-import { AddToCart } from "@/components/product/add-to-cart";
-import { StockBadge } from "@/components/product/stock-badge";
 import { Badge } from "@/components/ui/badge";
 import { ProductVariantClient } from "./product-client";
 
