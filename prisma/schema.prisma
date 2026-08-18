@@ -1,0 +1,377 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// =======================
+/// ENUMS
+/// =======================
+
+enum ProductType {
+  MANGA
+  LIGHT_NOVEL
+  MERCH
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum PaymentMethod {
+  CASH
+  STRIPE
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum AdminRole {
+  ADMIN
+  DEMO_ADMIN
+}
+
+/// =======================
+/// ADMIN AUTH
+/// =======================
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(ADMIN)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+/// =======================
+/// CATALOGUE
+/// =======================
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Genre {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  products ProductGenre[]
+}
+
+model Author {
+  id    String @id @default(cuid())
+  name  String
+  slug  String @unique
+  bio   String?
+  image String?
+
+  products ProductAuthor[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Publisher {
+  id      String @id @default(cuid())
+  name    String
+  slug    String @unique
+  website String?
+  logo    String?
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  type        ProductType
+  status      ProductStatus @default(ACTIVE)
+
+  summary     String?
+  description String
+
+  categoryId  String
+  publisherId String?
+
+  releaseDate DateTime?
+  lifetimeSales Int @default(0)
+
+  category  Category   @relation(fields: [categoryId], references: [id])
+  publisher Publisher? @relation(fields: [publisherId], references: [id])
+
+  bookMetadata BookMetadata?
+  images       ProductImage[]
+  variants     ProductVariant[]
+  authors      ProductAuthor[]
+  genres       ProductGenre[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([categoryId])
+  @@index([lifetimeSales])
+  @@index([status, type])
+}
+
+model ProductAuthor {
+  productId String
+  authorId  String
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  author  Author  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@id([productId, authorId])
+  @@index([authorId])
+}
+
+model ProductGenre {
+  productId String
+  genreId   String
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  genre   Genre   @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([productId, genreId])
+  @@index([genreId])
+}
+
+model BookMetadata {
+  id        String @id @default(cuid())
+  productId String @unique
+
+  volume      Int
+  isbn        String?
+  language    String  @default("Japanese")
+  pageCount   Int?
+  releaseDate DateTime?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductImage {
+  id        String @id @default(cuid())
+  productId String
+
+  url      String
+  alt      String?
+  position Int    @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([productId, position])
+}
+
+model ProductVariant {
+  id        String @id @default(cuid())
+  productId String
+
+  name  String
+  sku   String  @unique
+  price Decimal @db.Decimal(10, 2)
+
+  size  String?
+  color String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  inventory Inventory?
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Inventory {
+  id        String @id @default(cuid())
+  variantId String @unique
+
+  quantity   Int @default(0)
+  lowStockAt Int @default(5)
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+}
+
+/// =======================
+/// ORDERS
+/// =======================
+
+model Order {
+  id          String @id @default(cuid())
+  orderNumber String @unique
+
+  customerName  String
+  customerEmail String?
+  customerPhone String
+
+  paymentMethod PaymentMethod
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+
+  currency     String  @default("JPY")
+  subtotal     Decimal @db.Decimal(10, 2)
+  shippingCost Decimal @default(0) @db.Decimal(10, 2)
+  total        Decimal @db.Decimal(10, 2)
+
+  termsAccepted   Boolean
+  termsVersion    String
+  termsAcceptedAt DateTime
+
+  items            OrderItem[]
+  shippingAddress  OrderShippingAddress?
+  payment          Payment?
+  cashPickup       CashPickupDetails?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerEmail])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([paymentMethod])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+
+  variantId String?
+
+  productName String
+  variantName String
+  sku         String
+
+  unitPrice Decimal @db.Decimal(10, 2)
+  quantity  Int
+  total     Decimal @db.Decimal(10, 2)
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+}
+
+model OrderShippingAddress {
+  id      String @id @default(cuid())
+  orderId String @unique
+
+  firstName String
+  lastName  String
+
+  address1 String
+  address2 String?
+
+  city       String
+  state      String
+  postalCode String
+  country    String
+
+  phone String
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model CashPickupDetails {
+  id      String @id @default(cuid())
+  orderId String @unique
+
+  pickupLocation String
+  instructions   String?
+
+  pickedUpAt DateTime?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id      String @id @default(cuid())
+  orderId String @unique
+
+  provider PaymentMethod
+  status   PaymentStatus
+
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("JPY")
+
+  stripeCheckoutSessionId String? @unique
+  stripePaymentIntentId   String? @unique
+
+  paidAt DateTime?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// =======================
+/// HOMEPAGE CMS
+/// =======================
+
+model HeroSlide {
+  id String @id @default(cuid())
+
+  title    String
+  subtitle String?
+
+  imageUrl String
+
+  ctaText String?
+  ctaUrl  String?
+
+  position Int @default(0)
+
+  isActive Boolean @default(true)
+
+  startsAt DateTime?
+  endsAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, position])
+}
