@@ -131,6 +131,7 @@ model Product {
 
   releaseDate DateTime?
   lifetimeSales Int @default(0)
+  price Decimal @db.Decimal(10, 2)
 
   category  Category   @relation(fields: [categoryId], references: [id])
   publisher Publisher? @relation(fields: [publisherId], references: [id])

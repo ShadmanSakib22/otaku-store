@@ -263,6 +263,7 @@ async function main() {
 
         releaseDate,
         lifetimeSales,
+        price,
 
         bookMetadata: {
           create: {
@@ -353,6 +354,7 @@ async function main() {
         categoryId: merch.id,
 
         lifetimeSales,
+        price,
 
         images: {
           create: [

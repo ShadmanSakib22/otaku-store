@@ -2,70 +2,23 @@ import { prisma } from "@/lib/db/client";
 import { deriveStockStatus } from "@/lib/stock";
 import { Prisma, type ProductType } from "@/generated/prisma/client";
 import {
-  catalogueParamsSchema,
+  FILTER_KEYS,
+  parseCatalogueParams,
+  buildCatalogueUrl,
   type CatalogueParams,
-} from "@/lib/validation/search";
+} from "./catalogue-url";
 
-const FILTER_KEYS = ["q", "genre", "author", "publisher", "price", "sort"] as const;
-
-export function parseCatalogueParams(
-  searchParams: Record<string, string | string[] | undefined>
-): CatalogueParams {
-  const flat: Record<string, string> = {};
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (typeof value === "string") flat[key] = value;
-    else if (Array.isArray(value) && value.length > 0) flat[key] = value[0];
-  }
-  return catalogueParamsSchema.parse(flat);
-}
-
-export function buildCatalogueUrl(
-  base: string,
-  params: Partial<CatalogueParams>,
-  overrides: Partial<CatalogueParams>
-): string {
-  const filterChanged = (FILTER_KEYS as readonly string[]).some(
-    (key) => {
-      const override = overrides[key as keyof CatalogueParams];
-      return (
-        override !== undefined &&
-        override !== "" &&
-        override !== params[key as keyof CatalogueParams]
-      );
-    }
-  );
-
-  let page = overrides.page ?? params.page ?? 1;
-  if (filterChanged) page = 1;
-
-  const merged: Record<string, string> = {
-    q: overrides.q ?? params.q ?? "",
-    genre: overrides.genre ?? params.genre ?? "",
-    author: overrides.author ?? params.author ?? "",
-    publisher: overrides.publisher ?? params.publisher ?? "",
-    price: overrides.price ?? params.price ?? "",
-    sort: overrides.sort ?? params.sort ?? "relevance",
-  };
-
-  const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(merged)) {
-    if (key === "sort" && value === "relevance") continue;
-    if (value) query.set(key, value);
-  }
-  if (page > 1 || filterChanged) query.set("page", String(page));
-
-  const qs = query.toString();
-  return qs ? `${base}?${qs}` : base;
-}
+export { FILTER_KEYS, parseCatalogueParams, buildCatalogueUrl };
+export type { CatalogueParams };
 
 const PAGE_SIZE = 24;
 
 export async function getCatalogue(
   params: CatalogueParams,
-  categoryId?: string
+  categorySlug?: string
 ) {
   const where: Prisma.ProductWhereInput = { status: "ACTIVE" };
-  if (categoryId) where.categoryId = categoryId;
+  if (categorySlug) where.category = { slug: categorySlug };
   if (params.genre) {
     where.genres = { some: { genre: { slug: params.genre } } };
   }
@@ -117,13 +70,9 @@ function priceOrderBy(sort: CatalogueParams["sort"]) {
     case "best-selling":
       return [{ lifetimeSales: "desc" } as const];
     case "price-asc":
-    case "price-desc": {
-      // Order by lowest variant price using a correlated subquery-friendly sort:
-      // load page, sort by min price client-side is forbidden (server pagination).
-      // Prisma can't order by nested min() directly; approximate by sorting on
-      // the default variant price via relation through `variants`. Fallback:
-      return [{ variants: { _count: "asc" } } as const];
-    }
+      return [{ price: "asc" } as const];
+    case "price-desc":
+      return [{ price: "desc" } as const];
     default:
       return [{ lifetimeSales: "desc" } as const];
   }
@@ -136,12 +85,13 @@ function toProductListItem(product: {
   type: ProductType;
   summary: string | null;
   lifetimeSales: number;
+  price: Prisma.Decimal;
   releaseDate: Date | null;
   category: { slug: string; name: string };
   images: { url: string; alt: string | null }[];
   variants: { price: unknown; inventory: { quantity: number; lowStockAt: number } | null }[];
 }) {
-  const price = Number(product.variants[0]?.price ?? 0);
+  const price = Number(product.price);
   const inventory = product.variants[0]?.inventory;
   const stockStatus = inventory
     ? deriveStockStatus(inventory.quantity, inventory.lowStockAt)
