@@ -1,10 +1,14 @@
-import { PagePlaceholder } from "@/components/ui";
+import CategoryPage from "../category-page";
 
-export default function MangaPage() {
-  return (
-    <PagePlaceholder
-      title="Manga"
-      description="Browse and filter the manga catalogue."
-    />
-  );
+export default async function MangaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  return CategoryPage({
+    base: "/manga",
+    categorySlug: "manga",
+    title: "Manga",
+    searchParams,
+  });
 }

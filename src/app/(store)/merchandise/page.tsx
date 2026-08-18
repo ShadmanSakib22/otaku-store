@@ -1,10 +1,14 @@
-import { PagePlaceholder } from "@/components/ui";
+import CategoryPage from "../category-page";
 
-export default function MerchandisePage() {
-  return (
-    <PagePlaceholder
-      title="Merchandise"
-      description="Browse and filter the merchandise catalogue."
-    />
-  );
+export default async function MerchandisePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  return CategoryPage({
+    base: "/merchandise",
+    categorySlug: "merchandise",
+    title: "Merchandise",
+    searchParams,
+  });
 }

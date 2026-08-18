@@ -1,10 +1,14 @@
-import { PagePlaceholder } from "@/components/ui";
+import CategoryPage from "../category-page";
 
-export default function LightNovelsPage() {
-  return (
-    <PagePlaceholder
-      title="Light Novels"
-      description="Browse and filter the light novel catalogue."
-    />
-  );
+export default async function LightNovelsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  return CategoryPage({
+    base: "/light-novels",
+    categorySlug: "light-novels",
+    title: "Light Novels",
+    searchParams,
+  });
 }
