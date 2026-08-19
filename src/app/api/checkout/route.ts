@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
       customerName: order.customerName,
       lines,
       total: Number(order.total),
+      pickupLocation: PICKUP_LOCATION,
+      instructions: PICKUP_INSTRUCTIONS,
     });
   }
 
