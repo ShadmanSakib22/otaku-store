@@ -34,6 +34,19 @@ export interface HeroSlideRow {
   endsAt: string | null;
 }
 
+type SavedSlide = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  imageUrl: string;
+  ctaText: string | null;
+  ctaUrl: string | null;
+  position: number;
+  isActive: boolean;
+  startsAt: string | Date | null;
+  endsAt: string | Date | null;
+};
+
 interface SlideForm {
   id?: string;
   title: string;
@@ -45,6 +58,21 @@ interface SlideForm {
   isActive: boolean;
   startsAt: string;
   endsAt: string;
+}
+
+function toRow(slide: SavedSlide): HeroSlideRow {
+  return {
+    id: slide.id,
+    title: slide.title,
+    subtitle: slide.subtitle,
+    imageUrl: slide.imageUrl,
+    ctaText: slide.ctaText,
+    ctaUrl: slide.ctaUrl,
+    position: slide.position,
+    isActive: slide.isActive,
+    startsAt: slide.startsAt ? new Date(slide.startsAt).toISOString() : null,
+    endsAt: slide.endsAt ? new Date(slide.endsAt).toISOString() : null,
+  };
 }
 
 function emptyForm(): SlideForm {
@@ -140,7 +168,13 @@ export function HeroSlidesManager({
 
     startTransition(async () => {
       const res = await saveHeroSlideAction(fd);
-      if ("ok" in res) {
+      if (res.ok && res.slide) {
+        const row = toRow(res.slide);
+        setItems((list) => {
+          const exists = list.some((s) => s.id === row.id);
+          const next = exists ? list.map((s) => (s.id === row.id ? row : s)) : [...list, row];
+          return next.sort((a, b) => a.position - b.position);
+        });
         setOpen(false);
       } else {
         setError(res.error ?? "Failed to save slide");
@@ -159,9 +193,10 @@ export function HeroSlidesManager({
   const move = (index: number, direction: -1 | 1) => {
     const target = index + direction;
     if (target < 0 || target >= items.length) return;
-    const next = [...items];
-    const [item] = next.splice(index, 1);
-    next.splice(target, 0, item);
+    const reordered = [...items];
+    const [item] = reordered.splice(index, 1);
+    reordered.splice(target, 0, item);
+    const next = reordered.map((s, i) => ({ ...s, position: i }));
     setItems(next);
     startTransition(async () => {
       await reorderHeroSlidesAction(next.map((s) => s.id));

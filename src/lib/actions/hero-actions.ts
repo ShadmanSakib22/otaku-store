@@ -11,7 +11,7 @@ export async function saveHeroSlideAction(formData: FormData) {
     ...Object.fromEntries(formData),
     isActive: formData.get("isActive") === "true",
   });
-  if (!parsed.success) return { error: "Invalid slide data" };
+  if (!parsed.success) return { ok: false, error: "Invalid slide data" };
 
   const data = parsed.data;
   const payload = {
@@ -26,15 +26,13 @@ export async function saveHeroSlideAction(formData: FormData) {
     endsAt: data.endsAt ? new Date(data.endsAt) : null,
   };
 
-  if (data.id) {
-    await prisma.heroSlide.update({ where: { id: data.id }, data: payload });
-  } else {
-    await prisma.heroSlide.create({ data: payload });
-  }
+  const slide = data.id
+    ? await prisma.heroSlide.update({ where: { id: data.id }, data: payload })
+    : await prisma.heroSlide.create({ data: payload });
 
   revalidatePath("/");
   revalidatePath("/admin/homepage");
-  return { ok: true };
+  return { ok: true, slide };
 }
 
 export async function deleteHeroSlideAction(id: string) {
@@ -53,4 +51,5 @@ export async function reorderHeroSlidesAction(ids: string[]) {
   );
   revalidatePath("/");
   revalidatePath("/admin/homepage");
+  return { ok: true };
 }
