@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/client";
+import { deriveStockStatus } from "@/lib/stock";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -85,5 +86,37 @@ export async function getAdminProducts({
     currentPage: page,
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export async function getInventory({ page = 1, q = "" }: { page?: number; q?: string }) {
+  const where = q
+    ? { OR: [{ variant: { sku: { contains: q } } }, { variant: { product: { name: { contains: q } } } }] }
+    : {};
+  const pageSize = 50;
+  const [rows, total] = await Promise.all([
+    prisma.inventory.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: { variant: { include: { product: true } } },
+    }),
+    prisma.inventory.count({ where }),
+  ]);
+  return {
+    rows: rows.map((row) => ({
+      variantId: row.variantId,
+      sku: row.variant.sku,
+      productName: row.variant.product.name,
+      variantName: row.variant.name,
+      quantity: row.quantity,
+      lowStockAt: row.lowStockAt,
+      status: deriveStockStatus(row.quantity, row.lowStockAt),
+    })),
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    currentPage: page,
+    pageSize,
   };
 }
