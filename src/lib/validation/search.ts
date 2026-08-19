@@ -16,6 +16,7 @@ export const catalogueParamsSchema = z.object({
   author: z.string().trim().min(1).max(100).optional().default(""),
   publisher: z.string().trim().min(1).max(100).optional().default(""),
   price: z.enum(PRICE_BANDS).optional(),
+  type: z.enum(["MANGA", "LIGHT_NOVEL", "MERCH"]).optional(),
   sort: z.enum(SORTS).optional().default("relevance"),
   page: z.coerce.number().int().min(1).optional().default(1),
 });
