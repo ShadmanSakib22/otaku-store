@@ -1,10 +1,32 @@
-import { PagePlaceholder } from "@/components/ui";
+import { getHeroSlidesAdmin } from "@/lib/admin-queries";
+import { getSessionFromCookie } from "@/lib/auth/session";
+import { HeroSlidesManager } from "@/components/admin/hero-slides-manager";
 
-export default function AdminHomepagePage() {
+export const revalidate = 0;
+
+export default async function AdminHomepagePage() {
+  const [slides, session] = await Promise.all([
+    getHeroSlidesAdmin(),
+    getSessionFromCookie(),
+  ]);
+
+  const rows = slides.map((s) => ({
+    id: s.id,
+    title: s.title,
+    subtitle: s.subtitle,
+    imageUrl: s.imageUrl,
+    ctaText: s.ctaText,
+    ctaUrl: s.ctaUrl,
+    position: s.position,
+    isActive: s.isActive,
+    startsAt: s.startsAt?.toISOString() ?? null,
+    endsAt: s.endsAt?.toISOString() ?? null,
+  }));
+
   return (
-    <PagePlaceholder
-      title="Homepage"
-      description="Manage hero slides and homepage content."
-    />
+    <div className="space-y-4">
+      <h1 className="font-heading text-2xl font-bold">Homepage</h1>
+      <HeroSlidesManager slides={rows} canDelete={session?.role === "ADMIN"} />
+    </div>
   );
 }

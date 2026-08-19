@@ -110,6 +110,12 @@ export async function getOrders({ page = 1, status, paymentStatus }: { page?: nu
   return { orders, total, currentPage: page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) };
 }
 
+export async function getHeroSlidesAdmin() {
+  return prisma.heroSlide.findMany({
+    orderBy: { position: "asc" },
+  });
+}
+
 export async function getInventory({ page = 1, q = "" }: { page?: number; q?: string }) {
   const where = q
     ? { OR: [{ variant: { sku: { contains: q } } }, { variant: { product: { name: { contains: q } } } }] }
