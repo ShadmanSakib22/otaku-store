@@ -5,6 +5,7 @@ export async function sendCashPickupReceipt(_: {
   lines: unknown[];
   total: number;
 }) {
+  void _;
   return null; // implemented in Task D7
 }
 
@@ -16,5 +17,6 @@ export async function sendOrderConfirmation(_: {
   total: number;
   shippingAddress?: unknown;
 }) {
+  void _;
   return null; // implemented in Task D7
 }
