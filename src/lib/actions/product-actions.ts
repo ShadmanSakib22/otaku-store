@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db/client";
 import { requireAdmin, requireRole } from "@/lib/auth/guard";
 import { productFormSchema } from "@/lib/validation/admin";
 import { indexProduct, deleteProductFromIndex } from "@/lib/search/sync";
-import type { Prisma, ProductType, ProductStatus } from "@/generated/prisma/client";
+import { Prisma, type ProductType, type ProductStatus } from "@/generated/prisma/client";
 
 export async function uploadImageAction(formData: FormData) {
   await requireAdmin();
@@ -29,7 +29,18 @@ export async function deleteProductAction(id: string) {
 
 export async function saveProductAction(formData: FormData) {
   await requireAdmin();
-  const parsed = productFormSchema.safeParse(Object.fromEntries(formData));
+  const raw: Record<string, unknown> = Object.fromEntries(formData);
+  for (const key of ["genres", "authors", "imageUrls", "variants"] as const) {
+    const value = raw[key];
+    if (typeof value === "string") {
+      try {
+        raw[key] = JSON.parse(value) as unknown;
+      } catch {
+        return { error: "Invalid product data" };
+      }
+    }
+  }
+  const parsed = productFormSchema.safeParse(raw);
 
   if (!parsed.success) {
     return { error: "Invalid product data", issues: parsed.error.flatten() };
@@ -93,37 +104,57 @@ export async function saveProductAction(formData: FormData) {
   }
 
   const variantIds = data.variants.map((v) => v.id).filter((v): v is string => Boolean(v));
-  await prisma.productVariant.deleteMany({
-    where: {
-      productId: id,
-      NOT: { id: { in: variantIds } },
-    } as Prisma.ProductVariantWhereInput,
-  });
-  for (const variant of data.variants) {
-    const payload: Prisma.ProductVariantUncheckedUpdateInput = {
-      name: variant.name,
-      sku: variant.sku,
-      price: variant.price,
-      size: variant.size || null,
-      color: variant.color || null,
-    };
-    if (variant.id) {
-      await prisma.productVariant.update({ where: { id: variant.id }, data: payload });
-    } else {
-      const created = await prisma.productVariant.create({
-        data: {
-          name: variant.name,
-          sku: variant.sku,
-          price: variant.price,
-          size: variant.size || null,
-          color: variant.color || null,
-          productId: id,
-        },
-      });
-      await prisma.inventory.create({
-        data: { variantId: created.id, quantity: variant.stock, lowStockAt: variant.lowStockAt },
-      });
+  try {
+    await prisma.productVariant.deleteMany({
+      where: {
+        productId: id,
+        NOT: { id: { in: variantIds } },
+      } as Prisma.ProductVariantWhereInput,
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      return { error: "Cannot remove a variant that has been ordered" };
     }
+    throw error;
+  }
+  try {
+    for (const variant of data.variants) {
+      const payload: Prisma.ProductVariantUpdateInput = {
+        name: variant.name,
+        sku: variant.sku,
+        price: variant.price,
+        size: variant.size || null,
+        color: variant.color || null,
+        inventory: {
+          upsert: {
+            create: { quantity: variant.stock, lowStockAt: variant.lowStockAt },
+            update: { quantity: variant.stock, lowStockAt: variant.lowStockAt },
+          },
+        },
+      };
+      if (variant.id) {
+        await prisma.productVariant.update({ where: { id: variant.id }, data: payload });
+      } else {
+        const created = await prisma.productVariant.create({
+          data: {
+            name: variant.name,
+            sku: variant.sku,
+            price: variant.price,
+            size: variant.size || null,
+            color: variant.color || null,
+            productId: id,
+          },
+        });
+        await prisma.inventory.create({
+          data: { variantId: created.id, quantity: variant.stock, lowStockAt: variant.lowStockAt },
+        });
+      }
+    }
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { error: "Duplicate SKU" };
+    }
+    throw error;
   }
 
   await indexProduct(id);
