@@ -104,6 +104,19 @@ export async function createOrder(input: CreateOrderInput) {
         ...(input.method === "STRIPE" && input.address
           ? { shippingAddress: { create: input.address } }
           : {}),
+
+        ...(input.method === "STRIPE"
+          ? {
+              payment: {
+                create: {
+                  provider: "STRIPE",
+                  status: "PENDING",
+                  amount: subtotal + SHIPPING_COST,
+                  currency: "JPY",
+                },
+              },
+            }
+          : {}),
       },
     });
 
@@ -159,7 +172,7 @@ export async function markPickedUp(orderId: string) {
     });
     return tx.order.update({
       where: { id: orderId },
-      data: { status: "READY_FOR_PICKUP" },
+      data: { status: "READY_FOR_PICKUP", paymentStatus: "PAID" },
     });
   });
 }

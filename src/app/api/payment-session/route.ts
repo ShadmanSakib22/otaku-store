@@ -41,23 +41,23 @@ export async function POST(request: NextRequest) {
   });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const session = await createCheckoutSession({
-    order,
-    lines,
-    customer: { name: input.customerName, email: input.email, phone: input.phone },
-    shippingAddress: input.shippingAddress,
-    successUrl: `${appUrl}/order/${order.orderNumber}`,
-  });
+  let session;
+  try {
+    session = await createCheckoutSession({
+      order,
+      lines,
+      customer: { name: input.customerName, email: input.email, phone: input.phone },
+      shippingAddress: input.shippingAddress,
+      successUrl: `${appUrl}/order/${order.orderNumber}`,
+    });
+  } catch (error) {
+    await prisma.order.delete({ where: { id: order.id } });
+    throw error;
+  }
 
-  await prisma.payment.create({
-    data: {
-      orderId: order.id,
-      provider: "STRIPE",
-      status: "PENDING",
-      amount: order.total,
-      currency: "JPY",
-      stripeCheckoutSessionId: session.id,
-    },
+  await prisma.payment.update({
+    where: { orderId: order.id },
+    data: { stripeCheckoutSessionId: session.id },
   });
 
   return Response.json({ url: session.url }, { status: 200 });

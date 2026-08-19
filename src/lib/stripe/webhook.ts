@@ -37,12 +37,19 @@ export async function handleCheckoutSessionCompleted(sessionId: string) {
   const variantById = new Map(variants.map((v) => [v.id, v]));
 
   const lines: CartLine[] = order.items.map((item) => {
-    const variant = variantById.get(item.variantId ?? "");
+    const variant = item.variantId
+      ? variantById.get(item.variantId)
+      : undefined;
+    if (!item.variantId || !variant) {
+      throw new Error(
+        `Cannot finalize order ${order.id}: variant ${item.variantId ?? "(null)"} for line "${item.productName}" not found`
+      );
+    }
     return {
-      variantId: item.variantId ?? "",
+      variantId: item.variantId,
       sku: item.sku,
-      productId: variant?.product.id ?? "",
-      productSlug: "", // not needed by decrementInventoryAndSales
+      productId: variant.product.id,
+      productSlug: "",
       productName: item.productName,
       variantName: item.variantName,
       unitPrice: Number(item.unitPrice),

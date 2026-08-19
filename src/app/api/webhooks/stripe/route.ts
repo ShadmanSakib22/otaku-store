@@ -20,7 +20,13 @@ export async function POST(request: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as { id: string };
-    await handleCheckoutSessionCompleted(session.id);
+    const result = await handleCheckoutSessionCompleted(session.id);
+    if (result && !result.processed && result.reason === "no_payment") {
+      return Response.json(
+        { error: "No payment record found for session" },
+        { status: 500 }
+      );
+    }
   }
 
   return Response.json({ received: true }, { status: 200 });
