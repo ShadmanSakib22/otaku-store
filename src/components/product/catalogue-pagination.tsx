@@ -13,15 +13,23 @@ export function CataloguePagination({
   currentPage,
   base,
   params,
+  extraParams = {},
 }: {
   totalPages: number;
   currentPage: number;
   base: string;
   params: CatalogueParams;
+  extraParams?: Record<string, string>;
 }) {
   if (totalPages <= 1) return null;
 
-  const pageUrl = (page: number) => buildCatalogueUrl(base, params, { page });
+  const pageUrl = (page: number) => {
+    const url = new URL(buildCatalogueUrl(base, params, { page }), "http://local");
+    for (const [key, value] of Object.entries(extraParams)) {
+      if (value) url.searchParams.set(key, value);
+    }
+    return url.pathname + url.search;
+  };
 
   return (
     <Pagination className="mt-8">

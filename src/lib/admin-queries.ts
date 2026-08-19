@@ -89,6 +89,27 @@ export async function getAdminProducts({
   };
 }
 
+export async function getOrders({ page = 1, status, paymentStatus }: { page?: number; status?: string; paymentStatus?: string }) {
+  const where: Record<string, unknown> = {};
+  if (status) where.status = status;
+  if (paymentStatus) where.paymentStatus = paymentStatus;
+  const pageSize = 25;
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true, orderNumber: true, customerName: true, paymentMethod: true,
+        total: true, status: true, paymentStatus: true, createdAt: true,
+      },
+    }),
+    prisma.order.count({ where }),
+  ]);
+  return { orders, total, currentPage: page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) };
+}
+
 export async function getInventory({ page = 1, q = "" }: { page?: number; q?: string }) {
   const where = q
     ? { OR: [{ variant: { sku: { contains: q } } }, { variant: { product: { name: { contains: q } } } }] }
