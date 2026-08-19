@@ -1,2 +1,2 @@
-// Checkout components (multi-step flow, payment method, forms).
-export {};
+export * from "./checkout-client";
+export * from "./terms-block";

@@ -1,10 +1,5 @@
-import { PagePlaceholder } from "@/components/ui";
+import { CheckoutClient } from "@/components/checkout/checkout-client";
 
 export default function CheckoutPage() {
-  return (
-    <PagePlaceholder
-      title="Checkout"
-      description="Terms, payment method, and customer information."
-    />
-  );
+  return <CheckoutClient />;
 }
