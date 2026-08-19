@@ -7,7 +7,7 @@ const PAGE_SIZE = 24;
 
 export async function searchProducts(params: CatalogueParams) {
   const filters: string[] = [];
-  if (params.type) filters.push(`type = ${params.type}`);
+  if (params.type) filters.push(`type = "${params.type}"`);
   if (params.genre) filters.push(`genres = ${JSON.stringify(params.genre)}`);
   if (params.author) filters.push(`authors = ${JSON.stringify(params.author)}`);
   if (params.publisher) filters.push(`publisher = ${JSON.stringify(params.publisher)}`);
@@ -31,6 +31,7 @@ export async function searchProducts(params: CatalogueParams) {
       offset: (params.page - 1) * PAGE_SIZE,
       limit: PAGE_SIZE,
       attributesToRetrieve: ["id", "name", "slug", "type", "summary", "price", "lifetimeSales", "image", "category", "stockStatus", "releaseDate"],
+      attributesToSearch: ["name", "summary", "description", "genres", "authors", "publisher"],
     }
   );
 

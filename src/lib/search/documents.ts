@@ -5,6 +5,9 @@ export interface ProductDocument {
   id: string;
   name: string;
   slug: string;
+  summary: string | null;
+  description: string;
+  releaseDate: string | null;
   type: ProductType;
   category: string;
   authors: string[];
@@ -40,6 +43,9 @@ export function buildProductDocument(product: {
     id: product.id,
     name: product.name,
     slug: product.slug,
+    summary: product.summary,
+    description: product.description,
+    releaseDate: product.releaseDate ? product.releaseDate.toISOString() : null,
     type: product.type,
     category: product.category.name,
     authors: product.authors.map((a) => a.author.name),
