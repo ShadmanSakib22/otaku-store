@@ -1,2 +1,2 @@
-// Admin components (dashboard, product forms, tables).
-export {};
+export * from "./admin-nav";
+export * from "./logout-button";
