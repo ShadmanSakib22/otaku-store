@@ -139,10 +139,15 @@ export async function decrementInventoryAndSales(
         data: { lifetimeSales: { increment: line.quantity } },
       });
     }
-    return tx.order.update({
+    const order = await tx.order.update({
       where: { id: orderId },
       data: { paymentStatus: "PAID", status: "PROCESSING" },
     });
+    await tx.payment.update({
+      where: { orderId },
+      data: { status: "PAID", paidAt: new Date() },
+    });
+    return order;
   });
 }
 
