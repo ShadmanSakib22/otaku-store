@@ -1,10 +1,5 @@
-import { PagePlaceholder } from "@/components/ui";
+import { CartPageClient } from "@/components/cart/cart-page-client";
 
 export default function CartPage() {
-  return (
-    <PagePlaceholder
-      title="Cart"
-      description="Review your cart before checkout."
-    />
-  );
+  return <CartPageClient />;
 }
