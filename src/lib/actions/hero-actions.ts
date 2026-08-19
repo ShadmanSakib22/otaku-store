@@ -52,4 +52,5 @@ export async function reorderHeroSlidesAction(ids: string[]) {
     )
   );
   revalidatePath("/");
+  revalidatePath("/admin/homepage");
 }
