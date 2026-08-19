@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ecommerce-Otaku
+
+A Japanese pop-culture e-commerce store selling manga, light novels, and merchandise — with guest checkout, search, and a protected admin CMS.
+
+## Features
+
+- **Catalogue** — manga, light novels, and merchandise with genre filtering, price sorting, and pagination.
+- **Guest checkout** — no accounts required; pay by **cash on pickup** or **card via Stripe** (webhook-finalized orders).
+- **Order confirmation** — confirmation page per order plus a transactional email via Resend.
+- **Search** — Meilisearch-powered full-text search with filters and sorting.
+- **Admin CMS** — protected dashboard for products, inventory, orders, and homepage hero slides, with ADMIN / DEMO_ADMIN roles (jose-signed sessions).
+
+## Tech Stack
+
+- **Next.js 16** (App Router, React Server Components, Turbopack)
+- **Prisma 7 + Neon** PostgreSQL
+- **TypeScript**
+- **Tailwind CSS 4 + shadcn/ui**
+- **Zustand** (cart state), **TanStack Table** (admin tables)
+- **jose** (admin sessions)
+- **Stripe** (payments), **Resend** (transactional email)
+- **Meilisearch** (search), **Vercel Blob** (image uploads)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+ and **pnpm**
+- A PostgreSQL database (this project uses [Neon](https://neon.tech))
+- [Meilisearch](https://www.meilisearch.com/docs/learn/getting_started/installation) running locally (or a hosted instance)
+- Stripe account + [Stripe CLI](https://docs.stripe.com/stripe-cli) (for webhook testing)
+- Resend account with a verified sending domain
+- Vercel Blob store (for image uploads in the admin)
+
+### Install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy `example.env` to `.env` and fill in real values:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon pooled connection string (app runtime) |
+| `DIRECT_URL` | Neon direct connection string (Prisma CLI: migrations, seeding) |
+| `AUTH_SECRET` | Secret used to sign admin session tokens (generate with `openssl rand -base64 32`) |
+| `STRIPE_SECRET_KEY` | Stripe secret key (server-only) — placeholder |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret — placeholder |
+| `MEILISEARCH_HOST` | Meilisearch instance URL (local default: `http://localhost:7700`) |
+| `MEILISEARCH_ADMIN_KEY` | Meilisearch master/admin key (used to create/update the index) |
+| `MEILISEARCH_SEARCH_KEY` | Optional read-only key for storefront queries |
+| `RESEND_API_KEY` | Resend API key for transactional email — placeholder |
+| `EMAIL_FROM` | From address for order confirmation emails |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token — placeholder |
+| `NEXT_PUBLIC_APP_URL` | Public URL of the app (Stripe return URLs, absolute email links) |
 
-## Learn More
+> `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `BLOB_READ_WRITE_TOKEN` ship as placeholders — the store still runs with them blank until you configure the corresponding service.
 
-To learn more about Next.js, take a look at the following resources:
+### Database, seed, and dev server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm prisma:migrate   # apply migrations (prisma migrate dev)
+pnpm prisma:seed      # reset + populate demo catalogue data
+pnpm dev              # start http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The seed script wipes the database, then creates two admin users, three categories, fourteen genres, demo authors/publishers, a manga/light-novel/merch catalogue (with variants and inventory), and four homepage hero slides.
 
-## Deploy on Vercel
+## Setup Guides
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Meilisearch
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run a local instance, then set `MEILISEARCH_HOST` and `MEILISEARCH_ADMIN_KEY` in `.env`:
+
+```bash
+meilisearch --master-key masterKey
+```
+
+Populate the index (builds documents from active products in the DB):
+
+```bash
+pnpm exec tsx -e "import('@/lib/search/sync').then((m) => m.rebuildIndex())"
+```
+
+Search is served at `/search` (e.g. `/search?q=one-piece`).
+
+### Stripe
+
+Set your test keys in `.env`. In the Stripe Dashboard, register the webhook endpoint `https://<your-host>/api/webhooks/stripe` with the `checkout.session.completed` event. For local development:
+
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+Copy the printed `whsec_...` value into `STRIPE_WEBHOOK_SECRET`.
+
+### Resend
+
+Create an API key and add it as `RESEND_API_KEY`. Verify the domain you want to send from and set it as `EMAIL_FROM`.
+
+### Vercel Blob
+
+Create a Blob store and paste its read/write token into `BLOB_READ_WRITE_TOKEN` (used for product and hero-slide image uploads in the admin).
+
+### Admin users
+
+Log in at `/admin/login`. The seed creates:
+
+- `admin@example.com` / `Admin123!` (full `ADMIN` role)
+- `demo@example.com` / `Demo123!` (`DEMO_ADMIN` role)
+
+To create another admin, insert an `adminUser` row with a bcryptjs-hashed password, e.g.:
+
+```bash
+pnpm exec tsx -e "const { hash } = require('bcryptjs'); hash('YourPass123!', 12).then(console.log)"
+```
+
+## Scripts
+
+| Script | Command | Description |
+| --- | --- | --- |
+| `dev` | `pnpm dev` | Start the development server |
+| `build` | `pnpm build` | Production build (Turbopack) |
+| `start` | `pnpm start` | Start the production server |
+| `lint` | `pnpm lint` | ESLint over the project |
+| `test` | `pnpm test` | Run the Vitest test suite once |
+| `test:watch` | `pnpm test:watch` | Run tests in watch mode |
+| `prisma:generate` | `pnpm prisma generate` | Generate the Prisma client |
+| `prisma:migrate` | `pnpm prisma migrate dev` | Apply database migrations |
+| `prisma:seed` | `pnpm prisma db seed` | Reset and seed demo data |
+
+## Architecture
+
+The storefront is a Next.js 16 App Router app under `src/app`: catalogue pages (`/manga`, `/light-novels`, `/merchandise`, `/product/[slug]`), guest checkout (`/cart`, `/checkout`, `/order/[orderNumber]`), search (`/search`), and a protected admin under `/admin` with route-level session guards. Server actions and API routes handle checkout, Stripe payments (`/api/checkout`, `/api/payment-session`, `/api/webhooks/stripe`), and search indexing. Prisma talks to Neon PostgreSQL via the `@prisma/adapter-neon` driver adapter.
+
+For details, see the docs:
+
+- [`docs/architecture.md`](docs/architecture.md) — project structure and overview
+- [`docs/database.md`](docs/database.md) — data model and schema rules
+- [`docs/authentication.md`](docs/authentication.md) — admin sessions, roles, and access control
+- [`docs/payments.md`](docs/payments.md) — checkout flows and payment handling
+- [`docs/search.md`](docs/search.md) — Meilisearch indexing, filtering, and pagination
+- [`docs/decisions.md`](docs/decisions.md) — architectural decision records (ADRs)
+
+## Security Notes
+
+- `AUTH_SECRET` must be a strong random value (e.g. `openssl rand -base64 32`).
+- Never commit real secrets. Commit only `example.env`; keep `.env` out of version control.
