@@ -158,6 +158,13 @@ export function ProductForm({ categories, publishers, genres, authors, initial }
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    const finalVariants = form.variants.filter(
+      (v) => v.name.trim() && v.sku.trim() && v.price !== "" && Number(v.price) > 0
+    );
+    if (finalVariants.length === 0) {
+      setError("Add at least one complete variant");
+      return;
+    }
     const fd = new FormData();
     fd.append("name", form.name);
     fd.append("slug", form.slug);
@@ -171,7 +178,7 @@ export function ProductForm({ categories, publishers, genres, authors, initial }
     fd.append("genres", JSON.stringify(form.genres));
     fd.append("authors", JSON.stringify(form.authors));
     fd.append("imageUrls", JSON.stringify(form.imageUrls));
-    fd.append("variants", JSON.stringify(form.variants));
+    fd.append("variants", JSON.stringify(finalVariants));
     if (form.id) fd.append("id", form.id);
     if (form.volume != null) fd.append("volume", String(form.volume));
     fd.append("isbn", form.isbn ?? "");
@@ -359,7 +366,7 @@ export function ProductForm({ categories, publishers, genres, authors, initial }
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Price</Label>
-                  <Input type="number" min="0" step="0.01" value={variant.price} onChange={(e) => setVariant(index, { price: e.target.value })} />
+                  <Input type="number" min="1" step="1" value={variant.price} onChange={(e) => setVariant(index, { price: e.target.value })} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Size</Label>
