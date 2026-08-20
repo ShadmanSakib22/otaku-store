@@ -31,7 +31,7 @@ Primary goals:
         |
    +----+-----------------------------+
    |          |          |            |
- Neon DB   Meilisearch  Blob        Resend
+ Neon DB    Algolia    Blob        Resend
 Postgres      Search    Images       Email
    |
  Prisma
@@ -43,7 +43,7 @@ Postgres      Search    Images       Email
  Payments / Webhooks
 ```
 
-PostgreSQL is the source of truth. Meilisearch is a derived search index. Vercel Blob stores images. Stripe handles online payments. Resend handles transactional email.
+PostgreSQL is the source of truth. Algolia is a derived search index. Vercel Blob stores images. Stripe handles online payments. Resend handles transactional email.
 
 ## 3. Technology Stack
 
@@ -56,7 +56,7 @@ PostgreSQL is the source of truth. Meilisearch is a derived search index. Vercel
 - Prisma ORM
 - TanStack Query where useful
 - TanStack Table for complex admin tables
-- Meilisearch
+- Algolia
 - Stripe Checkout + webhooks
 - Resend
 - Vercel Blob
@@ -217,7 +217,7 @@ PostgreSQL
      |
      | indexing
      v
-Meilisearch
+Algolia
 ```
 
 Search requests conceptually follow:
@@ -344,7 +344,7 @@ Neon
 Vercel Blob
 └── Product / CMS images
 
-Meilisearch
+Algolia
 └── Catalogue search
 
 Stripe

@@ -7,7 +7,7 @@ A Japanese pop-culture e-commerce store selling manga, light novels, and merchan
 - **Catalogue** — manga, light novels, and merchandise with genre filtering, price sorting, and pagination.
 - **Guest checkout** — no accounts required; pay by **cash on pickup** or **card via Stripe** (webhook-finalized orders).
 - **Order confirmation** — confirmation page per order plus a transactional email via Resend.
-- **Search** — Meilisearch-powered full-text search with filters and sorting.
+- **Search** — Algolia-powered full-text search with filters and sorting.
 - **Admin CMS** — protected dashboard for products, inventory, orders, and homepage hero slides, with ADMIN / DEMO_ADMIN roles (jose-signed sessions).
 
 ## Tech Stack
@@ -19,7 +19,7 @@ A Japanese pop-culture e-commerce store selling manga, light novels, and merchan
 - **Zustand** (cart state), **TanStack Table** (admin tables)
 - **jose** (admin sessions)
 - **Stripe** (payments), **Resend** (transactional email)
-- **Meilisearch** (search), **Vercel Blob** (image uploads)
+- **Algolia** (search), **Vercel Blob** (image uploads)
 
 ## Getting Started
 
@@ -27,7 +27,7 @@ A Japanese pop-culture e-commerce store selling manga, light novels, and merchan
 
 - Node.js 20+ and **pnpm**
 - A PostgreSQL database (this project uses [Neon](https://neon.tech))
-- [Meilisearch](https://www.meilisearch.com/docs/learn/getting_started/installation) running locally (or a hosted instance)
+- An [Algolia](https://www.algolia.com) application (API keys from Settings → API Keys)
 - Stripe account + [Stripe CLI](https://docs.stripe.com/stripe-cli) (for webhook testing)
 - Resend account with a verified sending domain
 - Vercel Blob store (for image uploads in the admin)
@@ -49,9 +49,9 @@ Copy `example.env` to `.env` and fill in real values:
 | `AUTH_SECRET` | Secret used to sign admin session tokens (generate with `openssl rand -base64 32`) |
 | `STRIPE_SECRET_KEY` | Stripe secret key (server-only) — placeholder |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret — placeholder |
-| `MEILISEARCH_HOST` | Meilisearch instance URL (local default: `http://localhost:7700`) |
-| `MEILISEARCH_ADMIN_KEY` | Meilisearch master/admin key (used to create/update the index) |
-| `MEILISEARCH_SEARCH_KEY` | Optional read-only key for storefront queries |
+| `ALGOLIA_APP_ID` | Algolia application ID (Settings → API Keys) |
+| `ALGOLIA_ADMIN_API_KEY` | Algolia admin key (server-only, index writes) |
+| `ALGOLIA_SEARCH_API_KEY` | Algolia search-only key (storefront queries) |
 | `RESEND_API_KEY` | Resend API key for transactional email — placeholder |
 | `EMAIL_FROM` | From address for order confirmation emails |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token — placeholder |
@@ -71,13 +71,11 @@ The seed script wipes the database, then creates two admin users, three categori
 
 ## Setup Guides
 
-### Meilisearch
+For step-by-step instructions on creating accounts, obtaining every key, and verifying each service, see [`docs/setup.md`](docs/setup.md).
 
-Run a local instance, then set `MEILISEARCH_HOST` and `MEILISEARCH_ADMIN_KEY` in `.env`:
+### Algolia
 
-```bash
-meilisearch --master-key masterKey
-```
+Create an Algolia application and copy the app ID plus a search-only API key from **Settings → API Keys** into `ALGOLIA_APP_ID` / `ALGOLIA_SEARCH_API_KEY`, and the admin key into `ALGOLIA_ADMIN_API_KEY` (server-only).
 
 Populate the index (builds documents from active products in the DB):
 
@@ -142,7 +140,7 @@ For details, see the docs:
 - [`docs/database.md`](docs/database.md) — data model and schema rules
 - [`docs/authentication.md`](docs/authentication.md) — admin sessions, roles, and access control
 - [`docs/payments.md`](docs/payments.md) — checkout flows and payment handling
-- [`docs/search.md`](docs/search.md) — Meilisearch indexing, filtering, and pagination
+- [`docs/search.md`](docs/search.md) — Algolia indexing, filtering, and pagination
 - [`docs/decisions.md`](docs/decisions.md) — architectural decision records (ADRs)
 
 ## Security Notes

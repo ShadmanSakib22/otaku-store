@@ -14,7 +14,7 @@ PostgreSQL is authoritative for:
 - Homepage CMS data
 - Admin data
 
-Meilisearch is only a derived search index.
+Algolia is only a derived search index.
 
 ## 2. Core Domain Model
 
@@ -494,7 +494,7 @@ Compound indexes should be added when justified by real query patterns.
 
 ## 23. Search Data
 
-Meilisearch documents are generated from PostgreSQL.
+Algolia documents are generated from PostgreSQL.
 
 Example:
 

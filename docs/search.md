@@ -2,7 +2,7 @@
 
 ## 1. Search Engine
 
-The store uses Meilisearch for catalogue search.
+The store uses Algolia for catalogue search.
 
 PostgreSQL remains the source of truth.
 
@@ -11,7 +11,7 @@ PostgreSQL
     ↓
 Indexing
     ↓
-Meilisearch
+Algolia
 ```
 
 ## 2. Search Features
@@ -174,14 +174,18 @@ Example:
 
 ```json
 {
+  "objectID": "product-id",
   "id": "product-id",
   "name": "One Piece Vol. 1",
   "slug": "one-piece-volume-1",
   "type": "MANGA",
   "category": "Manga",
   "authors": ["Eiichiro Oda"],
+  "authorsSlugs": ["eiichiro-oda"],
   "publisher": "Shueisha",
+  "publisherSlug": "shueisha",
   "genres": ["Action", "Adventure"],
+  "genresSlugs": ["action", "adventure"],
   "price": 12.99,
   "lifetimeSales": 1248,
   "stockStatus": "IN_STOCK"
@@ -195,7 +199,7 @@ Admin mutation
    ↓
 PostgreSQL
    ↓
-Update/reindex Meilisearch
+Update/reindex Algolia
 ```
 
 Search indexing happens server-side.
@@ -233,4 +237,4 @@ Product
 └── Inventory
 ```
 
-Meilisearch is for discovery, not checkout or authoritative product state.
+Algolia is for discovery, not checkout or authoritative product state.

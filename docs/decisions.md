@@ -59,9 +59,9 @@ Reason: commerce data benefits from relational integrity and transactions.
 
 Use Prisma for type-safe PostgreSQL access, schema management, migrations, and TypeScript integration.
 
-## ADR-010 — Meilisearch
+## ADR-010 — Algolia
 
-Use Meilisearch as a dedicated catalogue search index.
+Use Algolia as a dedicated catalogue search index.
 
 Reason: full-text search, typo tolerance, facets, ranking, filtering, and fast pagination.
 
