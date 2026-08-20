@@ -7,3 +7,9 @@ export const PICKUP_INSTRUCTIONS =
 export const SUPPORT_EMAIL = "support@example.com";
 export const SUPPORT_PHONE = "+81-00-0000-0000";
 export const SEARCH_INDEX = "products";
+export const SEARCH_REPLICAS = {
+  priceAsc: "products_price_asc",
+  priceDesc: "products_price_desc",
+  newest: "products_newest",
+  bestSelling: "products_best_selling",
+} as const;
