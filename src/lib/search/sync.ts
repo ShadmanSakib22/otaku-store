@@ -3,22 +3,11 @@ import { adminClient } from "@/lib/search/client";
 import { SEARCH_INDEX, SEARCH_REPLICAS } from "@/lib/constants";
 import { buildProductDocument } from "@/lib/search/documents";
 
-const DEFAULT_RANKING = [
-  "typo",
-  "geo",
-  "words",
-  "filters",
-  "proximity",
-  "attribute",
-  "exact",
-  "custom",
-];
-
-const REPLICA_RANKINGS: { indexName: string; ranking: string[] }[] = [
-  { indexName: SEARCH_REPLICAS.priceAsc, ranking: ["asc(price)", ...DEFAULT_RANKING] },
-  { indexName: SEARCH_REPLICAS.priceDesc, ranking: ["desc(price)", ...DEFAULT_RANKING] },
-  { indexName: SEARCH_REPLICAS.newest, ranking: ["desc(createdAt)", ...DEFAULT_RANKING] },
-  { indexName: SEARCH_REPLICAS.bestSelling, ranking: ["desc(lifetimeSales)", ...DEFAULT_RANKING] },
+const REPLICA_CUSTOM_RANKING: { indexName: string; customRanking: string[] }[] = [
+  { indexName: SEARCH_REPLICAS.priceAsc, customRanking: ["asc(price)"] },
+  { indexName: SEARCH_REPLICAS.priceDesc, customRanking: ["desc(price)"] },
+  { indexName: SEARCH_REPLICAS.newest, customRanking: ["desc(createdAt)"] },
+  { indexName: SEARCH_REPLICAS.bestSelling, customRanking: ["desc(lifetimeSales)"] },
 ];
 
 export async function ensureIndex() {
@@ -42,13 +31,13 @@ export async function ensureIndex() {
         "price",
         "stockStatus",
       ],
-      replicas: REPLICA_RANKINGS.map((r) => `virtual(${r.indexName})`),
+      replicas: REPLICA_CUSTOM_RANKING.map((r) => `virtual(${r.indexName})`),
     },
   });
-  for (const replica of REPLICA_RANKINGS) {
+  for (const replica of REPLICA_CUSTOM_RANKING) {
     await adminClient.setSettings({
       indexName: replica.indexName,
-      indexSettings: { ranking: replica.ranking },
+      indexSettings: { customRanking: replica.customRanking },
     });
   }
 }

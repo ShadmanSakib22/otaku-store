@@ -60,7 +60,7 @@ export async function searchProducts(params: CatalogueParams) {
 
   return {
     products: hits,
-    total: result.nbHits ?? 0,
+    total: result.nbSortedHits ?? result.nbHits ?? 0,
     currentPage: params.page,
     pageSize: PAGE_SIZE,
     totalPages: Math.max(1, result.nbPages ?? 1),
