@@ -1,8 +1,8 @@
-import { Meilisearch } from "meilisearch";
+import { algoliasearch } from "algoliasearch";
 
-const host = process.env.MEILISEARCH_HOST ?? "http://localhost:7700";
+const appId = process.env.ALGOLIA_APP_ID ?? "";
+const adminKey = process.env.ALGOLIA_ADMIN_API_KEY ?? "";
+const searchKey = process.env.ALGOLIA_SEARCH_API_KEY ?? "";
 
-export const searchClient = new Meilisearch({
-  host,
-  apiKey: process.env.MEILISEARCH_ADMIN_KEY,
-});
+export const adminClient = algoliasearch(appId, adminKey);
+export const searchClient = algoliasearch(appId, searchKey);
