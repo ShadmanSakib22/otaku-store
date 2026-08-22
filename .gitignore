@@ -46,3 +46,6 @@ next-env.d.ts
 # local-only superpowers docs (plans/specs)
 /docs/superpowers/
 .superpowers/
+
+# temp examples
+/trial/
