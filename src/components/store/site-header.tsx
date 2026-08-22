@@ -2,6 +2,7 @@ import Link from "next/link";
 import { siteNav } from "./site-nav";
 import { CartButton } from "./cart-button";
 import { ThemeSwitcher } from "./theme-switcher";
+import { HeaderSearch } from "./header-search";
 
 export function SiteHeader() {
   return (
@@ -13,17 +14,20 @@ export function SiteHeader() {
         >
           Otaku Store
         </Link>
-        <nav className="flex items-center gap-1 text-sm">
-          {siteNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-1 items-center justify-center gap-4">
+          <nav className="flex items-center gap-1 text-sm">
+            {siteNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <HeaderSearch />
+        </div>
         <div className="flex items-center gap-1">
           <CartButton />
           <ThemeSwitcher />
