@@ -42,3 +42,6 @@ next-env.d.ts
 
 # prisma generated client
 /src/generated/
+
+# local-only superpowers docs (plans/specs)
+/docs/superpowers/
