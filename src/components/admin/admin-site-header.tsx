@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogoutButton } from "@/components/admin/logout-button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
-import { PanelLeftIcon } from "lucide-react";
+import { ArrowUpRight, Mail, PanelLeftIcon } from "lucide-react";
 
 const breadcrumbMap: Record<string, string> = {
   dashboard: "Dashboard",
@@ -59,8 +58,23 @@ export function AdminSiteHeader() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="ml-auto">
-          <LogoutButton />
+        <div className="ml-auto flex items-center gap-2">
+          <a
+            href="mailto:store@example.com"
+            className="flex items-center gap-1.5 rounded-md border bg-muted/40 px-2 py-1 text-sm transition-colors hover:bg-muted"
+          >
+            <Mail className="size-4" />
+            Mail
+          </a>
+          <a
+            href="https://dashboard.stripe.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-md border bg-muted/40 px-2 py-1 text-sm transition-colors hover:bg-muted"
+          >
+            Stripe
+            <ArrowUpRight className="size-4" />
+          </a>
         </div>
       </div>
     </header>

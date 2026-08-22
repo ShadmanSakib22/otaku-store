@@ -200,3 +200,85 @@ export async function getInventory({
     pageSize,
   };
 }
+
+
+export interface DashboardSales {
+  byType: { type: string; revenue: number }[];
+  byDay: { date: string; revenue: number }[];
+  byAuthor: { id: string; name: string; revenue: number }[];
+}
+
+export async function getDashboardSales(): Promise<DashboardSales> {
+  const since = new Date();
+  since.setDate(since.getDate() - 29);
+  since.setHours(0, 0, 0, 0);
+
+  const orders = await prisma.order.findMany({
+    where: {
+      paymentStatus: "PAID",
+      createdAt: { gte: since },
+    },
+    select: {
+      createdAt: true,
+      items: {
+        select: {
+          quantity: true,
+          unitPrice: true,
+          variant: {
+            select: {
+              product: {
+                select: {
+                  type: true,
+                  authors: {
+                    select: { author: { select: { id: true, name: true } } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const types = ["LIGHT_NOVEL", "MANGA", "MERCH"] as const;
+  const byType = types.map((type) => ({ type, revenue: 0 }));
+  const typeMap = new Map(byType.map((t) => [t.type, t]));
+
+  const dayMap = new Map<string, number>();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(since);
+    d.setDate(d.getDate() + i);
+    dayMap.set(d.toISOString().slice(0, 10), 0);
+  }
+
+  const byAuthor = new Map<string, { id: string; name: string; revenue: number }>();
+
+  for (const order of orders) {
+    const dayKey = order.createdAt?.toISOString().slice(0, 10);
+    for (const item of order.items) {
+      const revenue = Number(item.unitPrice ?? 0) * item.quantity;
+      const product = item.variant?.product;
+      if (product?.type && typeMap.has(product.type)) {
+        typeMap.get(product.type)!.revenue += revenue;
+      }
+      if (dayKey && dayMap.has(dayKey)) {
+        dayMap.set(dayKey, dayMap.get(dayKey)! + revenue);
+      }
+      for (const { author } of product?.authors ?? []) {
+        const existing =
+          byAuthor.get(author.id) ??
+          { id: author.id, name: author.name, revenue: 0 };
+        existing.revenue += revenue;
+        byAuthor.set(author.id, existing);
+      }
+    }
+  }
+
+  const byDay = [...dayMap.entries()].map(([date, revenue]) => ({ date, revenue }));
+  const byAuthorArr = [...byAuthor.values()]
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 10);
+
+  return { byType, byDay, byAuthor: byAuthorArr };
+}
