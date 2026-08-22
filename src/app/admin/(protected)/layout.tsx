@@ -9,14 +9,14 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  await requireAdmin()
+  const session = await requireAdmin()
 
   return (
     <div className="[--header-height:calc(--spacing(14))]">
       <SidebarProvider className="flex flex-col">
         <AdminSiteHeader />
         <div className="flex flex-1">
-          <AdminSidebar />
+          <AdminSidebar role={session.role} />
           <SidebarInset>
             <div className="flex flex-1 flex-col gap-4 p-4">
               {children}

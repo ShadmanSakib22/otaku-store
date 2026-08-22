@@ -34,8 +34,11 @@ const navItems = [
 ];
 
 export function AdminSidebar({
+  role,
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof Sidebar> & {
+  role: "ADMIN" | "DEMO_ADMIN";
+}) {
   const pathname = usePathname();
 
   return (
@@ -85,6 +88,7 @@ export function AdminSidebar({
       </SidebarContent>
       <SidebarFooter>
         <NavUser
+          role={role}
           user={{
             name: "Admin",
             email: "admin@otaku-store.com",

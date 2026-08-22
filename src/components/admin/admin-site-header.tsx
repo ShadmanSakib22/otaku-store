@@ -58,14 +58,7 @@ export function AdminSiteHeader() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="ml-auto flex items-center gap-2">
-          <a
-            href="mailto:store@example.com"
-            className="flex items-center gap-1.5 rounded-md border bg-muted/40 px-2 py-1 text-sm transition-colors hover:bg-muted"
-          >
-            <Mail className="size-4" />
-            Mail
-          </a>
+        <div className="ml-auto">
           <a
             href="https://dashboard.stripe.com"
             target="_blank"

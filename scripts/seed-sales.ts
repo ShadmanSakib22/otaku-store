@@ -96,9 +96,13 @@ async function main() {
     { type: "MANGA", names: ["Attack on Titan", "One Piece", "My Hero Academia"] },
     { type: "LIGHT_NOVEL", names: ["Sword Art Online", "Re:Zero", "Overlord"] },
     { type: "MERCH", names: ["Anime Figure Deluxe", "Acrylic Stand", "Poster Collection"] },
-  ]
+  ] as const
 
-  const products = []
+  const products: {
+    id: string
+    name: string
+    variants: { id: string; name: string; sku: string; price: unknown }[]
+  }[] = []
   let sku = 1
   for (const def of typeDefs) {
     for (const name of def.names) {

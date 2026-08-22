@@ -1,5 +1,7 @@
 "use client";
 
+import * as React from "react";
+import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,6 +11,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
@@ -17,18 +22,31 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { logoutAction } from "@/lib/actions/admin-actions";
-import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react";
+import { ChangePasswordDialog } from "@/components/admin/change-password-dialog";
+import {
+  ChevronsUpDownIcon,
+  KeyRoundIcon,
+  LogOutIcon,
+  MonitorIcon,
+  MoonIcon,
+  SunIcon,
+  UserIcon,
+} from "lucide-react";
 
 export function NavUser({
   user,
+  role,
 }: {
   user: {
     name: string;
     email: string;
     avatar: string;
   };
+  role: "ADMIN" | "DEMO_ADMIN";
 }) {
   const { isMobile } = useSidebar();
+  const { setTheme } = useTheme();
+  const [changePasswordOpen, setChangePasswordOpen] = React.useState(false);
 
   return (
     <SidebarMenu>
@@ -74,6 +92,33 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              <DropdownMenuItem
+                disabled={role === "DEMO_ADMIN"}
+                onClick={() => setChangePasswordOpen(true)}
+              >
+                <KeyRoundIcon />
+                Change password
+              </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <SunIcon />
+                  Theme
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => setTheme("light")}>
+                    <SunIcon />
+                    Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")}>
+                    <MoonIcon />
+                    Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")}>
+                    <MonitorIcon />
+                    System
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               <DropdownMenuItem onClick={() => logoutAction()}>
                 <LogOutIcon />
                 Log Out
@@ -82,6 +127,10 @@ export function NavUser({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <ChangePasswordDialog
+        open={changePasswordOpen}
+        onOpenChange={setChangePasswordOpen}
+      />
     </SidebarMenu>
   );
 }
