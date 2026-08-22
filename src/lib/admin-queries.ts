@@ -43,27 +43,56 @@ export async function getRecentOrders(limit = 8) {
   });
 }
 
+const VALID_PRODUCT_SORT_FIELDS = ["name", "type", "status", "createdAt", "price"];
+const VALID_ORDER_SORT_FIELDS = ["orderNumber", "customerName", "total", "status", "paymentStatus", "createdAt"];
+const VALID_INVENTORY_SORT_FIELDS = ["quantity", "updatedAt"];
+
+function parseSortParam(sort: string, validFields: string[]) {
+  const [sortField, sortDir] = sort.split("-");
+  if (validFields.includes(sortField)) {
+    return { [sortField]: sortDir === "asc" ? "asc" as const : "desc" as const };
+  }
+  return { createdAt: "desc" as const };
+}
+
+export function buildProductWhere({
+  q = "",
+  status,
+  type,
+}: {
+  q?: string;
+  status?: string;
+  type?: string;
+} = {}) {
+  const where: Record<string, unknown> = {};
+  if (q) where.OR = [{ name: { contains: q } }, { slug: { contains: q } }];
+  if (status) where.status = status;
+  if (type) where.type = type;
+  return where;
+}
+
 export async function getAdminProducts({
   page = 1,
   q = "",
   status,
   type,
+  sort = "createdAt-desc",
+  pageSize = 25,
 }: {
   page?: number;
   q?: string;
   status?: string;
   type?: string;
+  sort?: string;
+  pageSize?: number;
 }) {
-  const where: Record<string, unknown> = {};
-  if (q) where.OR = [{ name: { contains: q } }, { slug: { contains: q } }];
-  if (status) where.status = status;
-  if (type) where.type = type;
+  const where = buildProductWhere({ q, status, type });
 
-  const pageSize = 25;
+  const orderBy = parseSortParam(sort, VALID_PRODUCT_SORT_FIELDS);
   const [products, total] = await Promise.all([
     prisma.product.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: { variants: { include: { inventory: true } } },
@@ -89,15 +118,28 @@ export async function getAdminProducts({
   };
 }
 
-export async function getOrders({ page = 1, status, paymentStatus }: { page?: number; status?: string; paymentStatus?: string }) {
+export async function getOrders({
+  page = 1,
+  status,
+  paymentStatus,
+  sort = "createdAt-desc",
+  pageSize = 25,
+}: {
+  page?: number;
+  status?: string;
+  paymentStatus?: string;
+  sort?: string;
+  pageSize?: number;
+}) {
   const where: Record<string, unknown> = {};
   if (status) where.status = status;
   if (paymentStatus) where.paymentStatus = paymentStatus;
-  const pageSize = 25;
+
+  const orderBy = parseSortParam(sort, VALID_ORDER_SORT_FIELDS);
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
       select: {
@@ -116,15 +158,26 @@ export async function getHeroSlidesAdmin() {
   });
 }
 
-export async function getInventory({ page = 1, q = "" }: { page?: number; q?: string }) {
+export async function getInventory({
+  page = 1,
+  q = "",
+  sort = "updatedAt-desc",
+  pageSize = 25,
+}: {
+  page?: number;
+  q?: string;
+  sort?: string;
+  pageSize?: number;
+}) {
   const where = q
     ? { OR: [{ variant: { sku: { contains: q } } }, { variant: { product: { name: { contains: q } } } }] }
     : {};
-  const pageSize = 50;
+
+  const orderBy = parseSortParam(sort, VALID_INVENTORY_SORT_FIELDS) as Record<string, "asc" | "desc">;
   const [rows, total] = await Promise.all([
     prisma.inventory.findMany({
       where,
-      orderBy: { updatedAt: "desc" },
+      orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: { variant: { include: { product: true } } },

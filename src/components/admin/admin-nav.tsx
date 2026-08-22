@@ -9,7 +9,7 @@ const links = [
   { href: "/admin/products", label: "Products" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/homepage", label: "Homepage" },
+  { href: "/admin/homepage", label: "Homepage CMS" },
 ];
 
 export function AdminNav() {
@@ -24,7 +24,7 @@ export function AdminNav() {
             "rounded-md px-3 py-2 text-sm",
             pathname === link.href
               ? "bg-muted font-medium"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
           {link.label}

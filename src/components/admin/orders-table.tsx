@@ -1,14 +1,12 @@
+﻿"use client";
+
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/admin/data-table";
+import { DataTableColumnHeader } from "@/components/admin/data-table-column-header";
+import type { DataTableConfig, PaginationState, DataTableFilter } from "@/lib/admin-table-types";
+import type { LegacyColumnDef } from "@tanstack/react-table/legacy";
 
 export interface AdminOrderRow {
   id: string;
@@ -45,56 +43,99 @@ function formatDate(value: Date | string) {
   }).format(new Date(value));
 }
 
-export function OrdersTable({ orders }: { orders: AdminOrderRow[] }) {
-  if (orders.length === 0) {
-    return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
-        No orders found.
-      </p>
-    );
-  }
+const columns: LegacyColumnDef<AdminOrderRow>[] = [
+  {
+    accessorKey: "orderNumber",
+    header: () => <DataTableColumnHeader sortField="orderNumber" title="Order" />,
+    cell: ({ row }) => (
+      <Link
+        href={`/admin/orders/${row.original.id}`}
+        className="font-mono text-xs hover:underline"
+      >
+        {row.original.orderNumber}
+      </Link>
+    ),
+  },
+  {
+    accessorKey: "customerName",
+    header: () => <DataTableColumnHeader sortField="customerName" title="Customer" />,
+  },
+  { accessorKey: "paymentMethod", header: "Method" },
+  {
+    accessorKey: "total",
+    header: () => <DataTableColumnHeader sortField="total" title="Total" />,
+    cell: ({ row }) => formatPrice(Number(row.original.total), "JPY"),
+  },
+  {
+    accessorKey: "paymentStatus",
+    header: () => <DataTableColumnHeader sortField="paymentStatus" title="Payment" />,
+    cell: ({ row }) => (
+      <Badge variant={paymentVariant[row.original.paymentStatus] ?? "outline"}>
+        {row.original.paymentStatus}
+      </Badge>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: () => <DataTableColumnHeader sortField="status" title="Status" />,
+    cell: ({ row }) => (
+      <Badge variant={statusVariant[row.original.status] ?? "outline"}>
+        {row.original.status}
+      </Badge>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: () => <DataTableColumnHeader sortField="createdAt" title="Created" />,
+    cell: ({ row }) => formatDate(row.original.createdAt),
+  },
+];
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Order</TableHead>
-          <TableHead>Customer</TableHead>
-          <TableHead>Method</TableHead>
-          <TableHead>Total</TableHead>
-          <TableHead>Payment</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Created</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {orders.map((order) => (
-          <TableRow key={order.id}>
-            <TableCell>
-              <Link
-                href={`/admin/orders/${order.id}`}
-                className="font-mono text-xs hover:underline"
-              >
-                {order.orderNumber}
-              </Link>
-            </TableCell>
-            <TableCell>{order.customerName}</TableCell>
-            <TableCell>{order.paymentMethod}</TableCell>
-            <TableCell>{formatPrice(Number(order.total), "JPY")}</TableCell>
-            <TableCell>
-              <Badge variant={paymentVariant[order.paymentStatus] ?? "outline"}>
-                {order.paymentStatus}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant={statusVariant[order.status] ?? "outline"}>
-                {order.status}
-              </Badge>
-            </TableCell>
-            <TableCell>{formatDate(order.createdAt)}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+interface OrdersTableProps {
+  data: AdminOrderRow[];
+  pagination: PaginationState;
+  searchParams: Record<string, string>;
+}
+
+const filters: DataTableFilter[] = [
+  {
+    id: "status",
+    label: "Status",
+    options: [
+      { label: "Pending", value: "PENDING" },
+      { label: "Processing", value: "PROCESSING" },
+      { label: "Ready for Pickup", value: "READY_FOR_PICKUP" },
+      { label: "Shipped", value: "SHIPPED" },
+      { label: "Delivered", value: "DELIVERED" },
+      { label: "Completed", value: "COMPLETED" },
+      { label: "Cancelled", value: "CANCELLED" },
+    ],
+  },
+  {
+    id: "paymentStatus",
+    label: "Payment",
+    options: [
+      { label: "Pending", value: "PENDING" },
+      { label: "Paid", value: "PAID" },
+      { label: "Failed", value: "FAILED" },
+      { label: "Refunded", value: "REFUNDED" },
+    ],
+  },
+];
+
+export function OrdersTable({ data, pagination, searchParams }: OrdersTableProps) {
+  const config: DataTableConfig<AdminOrderRow> = {
+    columns,
+    data,
+    pagination,
+    filters,
+    activeFilters: {
+      ...(searchParams.status ? { status: searchParams.status } : {}),
+      ...(searchParams.paymentStatus ? { paymentStatus: searchParams.paymentStatus } : {}),
+    },
+    basePath: "/admin/orders",
+    enableBulkActions: true,
+  };
+
+  return <DataTable config={config} />;
 }

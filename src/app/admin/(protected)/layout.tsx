@@ -1,31 +1,30 @@
-import Link from "next/link";
-import { requireAdmin } from "@/lib/auth/guard";
-import { AdminNav } from "@/components/admin/admin-nav";
-import { LogoutButton } from "@/components/admin/logout-button";
+import { requireAdmin } from "@/lib/auth/guard"
+import { AdminSidebar } from "@/components/admin/admin-sidebar"
+import { AdminSiteHeader } from "@/components/admin/admin-site-header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
 
 export default async function AdminLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  await requireAdmin();
+  await requireAdmin()
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-          <Link href="/admin/dashboard" className="font-heading text-lg font-bold">
-            Admin
-          </Link>
-          <LogoutButton />
+    <div className="[--header-height:calc(--spacing(14))]">
+      <SidebarProvider className="flex flex-col">
+        <AdminSiteHeader />
+        <div className="flex flex-1">
+          <AdminSidebar />
+          <SidebarInset>
+            <div className="flex flex-1 flex-col gap-4 p-4">
+              {children}
+            </div>
+            <Toaster />
+          </SidebarInset>
         </div>
-      </header>
-      <div className="mx-auto flex max-w-7xl gap-8 px-4 py-6">
-        <aside className="w-48 shrink-0">
-          <AdminNav />
-        </aside>
-        <main className="flex-1">{children}</main>
-      </div>
+      </SidebarProvider>
     </div>
-  );
+  )
 }

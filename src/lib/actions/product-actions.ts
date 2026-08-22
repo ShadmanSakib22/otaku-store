@@ -6,7 +6,87 @@ import { prisma } from "@/lib/db/client";
 import { requireAdmin, requireRole } from "@/lib/auth/guard";
 import { productFormSchema } from "@/lib/validation/admin";
 import { indexProduct, deleteProductFromIndex } from "@/lib/search/sync";
+import { buildProductWhere } from "@/lib/admin-queries";
 import { Prisma, type ProductType, type ProductStatus } from "@/generated/prisma/client";
+
+export type BulkTarget =
+  | { mode: "ids"; ids: string[] }
+  | {
+      mode: "filter";
+      filter: { q?: string; status?: string; type?: string; sort?: string };
+    };
+
+async function resolveProductIds(target: BulkTarget): Promise<string[]> {
+  if (target.mode === "ids") {
+    return target.ids.filter(Boolean);
+  }
+  const { q, status, type } = target.filter;
+  const products = await prisma.product.findMany({
+    where: buildProductWhere({ q, status, type }),
+    select: { id: true },
+  });
+  return products.map((p) => p.id);
+}
+
+export async function bulkDeleteProductsAction(target: BulkTarget) {
+  await requireRole("ADMIN");
+  const ids = await resolveProductIds(target);
+  if (ids.length === 0) return { error: "No products selected" };
+
+  await prisma.product.deleteMany({ where: { id: { in: ids } } });
+  await Promise.all(ids.map((id) => deleteProductFromIndex(id)));
+
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  return { ok: true, count: ids.length };
+}
+
+export async function bulkSetProductStatusAction(
+  target: BulkTarget,
+  status: ProductStatus,
+) {
+  await requireRole("ADMIN");
+  const ids = await resolveProductIds(target);
+  if (ids.length === 0) return { error: "No products selected" };
+
+  await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data: { status },
+  });
+  await Promise.all(ids.map((id) => indexProduct(id)));
+
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  return { ok: true, count: ids.length };
+}
+
+export async function bulkSetProductStockAction(
+  target: BulkTarget,
+  quantity: number,
+) {
+  await requireRole("ADMIN");
+  const ids = await resolveProductIds(target);
+  if (ids.length === 0) return { error: "No products selected" };
+
+  const clamped = Math.max(0, Math.floor(Number(quantity) || 0));
+  const variantIds = (
+    await prisma.productVariant.findMany({
+      where: { productId: { in: ids } },
+      select: { id: true },
+    })
+  ).map((v) => v.id);
+
+  if (variantIds.length > 0) {
+    await prisma.inventory.updateMany({
+      where: { variantId: { in: variantIds } },
+      data: { quantity: clamped },
+    });
+  }
+
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  return { ok: true, count: ids.length };
+}
 
 export async function uploadImageAction(formData: FormData) {
   await requireAdmin();

@@ -11,7 +11,13 @@ export function CartButton() {
   );
 
   return (
-    <Button asChild variant="ghost" size="icon" aria-label={`Cart (${count})`}>
+    <Button
+      asChild
+      variant="ghost"
+      size="icon"
+      className="relative"
+      aria-label={`Cart (${count})`}
+    >
       <Link href="/cart">
         <ShoppingCart />
         {count > 0 ? (

@@ -1,9 +1,7 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { getAdminProducts } from "@/lib/admin-queries";
 import { ProductsTable } from "@/components/admin/products-table";
 import { Button } from "@/components/ui/button";
-import { CataloguePagination } from "@/components/product/catalogue-pagination";
-import { parseCatalogueParams } from "@/lib/catalogue";
 
 export const revalidate = 0;
 
@@ -12,8 +10,15 @@ export default async function AdminProductsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const params = parseCatalogueParams(await searchParams);
-  const result = await getAdminProducts({ page: params.page, q: params.q });
+  const raw = await searchParams;
+  const page = typeof raw.page === "string" ? Number(raw.page) : 1;
+  const pageSize = typeof raw.pageSize === "string" ? Number(raw.pageSize) : 25;
+  const q = typeof raw.q === "string" ? raw.q : "";
+  const status = typeof raw.status === "string" ? raw.status : undefined;
+  const type = typeof raw.type === "string" ? raw.type : undefined;
+  const sort = typeof raw.sort === "string" ? raw.sort : "createdAt-desc";
+
+  const result = await getAdminProducts({ page, pageSize, q, status, type, sort });
 
   return (
     <div className="space-y-4">
@@ -23,12 +28,20 @@ export default async function AdminProductsPage({
           <Link href="/admin/products/new">New Product</Link>
         </Button>
       </div>
-      <ProductsTable data={result.products} />
-      <CataloguePagination
-        totalPages={result.totalPages}
-        currentPage={result.currentPage}
-        base="/admin/products"
-        params={params}
+      <ProductsTable
+        data={result.products}
+        pagination={{
+          page: result.currentPage,
+          pageSize: result.pageSize,
+          total: result.total,
+          totalPages: result.totalPages,
+        }}
+        searchParams={{
+          ...(q ? { q } : {}),
+          ...(status ? { status } : {}),
+          ...(type ? { type } : {}),
+          ...(sort ? { sort } : {}),
+        }}
       />
     </div>
   );
