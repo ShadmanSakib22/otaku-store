@@ -3,7 +3,14 @@
 import Link from "next/link";
 import FlowArt, { FlowSection } from "@/components/ui/story-scroll";
 import { Button } from "@/components/ui/button";
-import type { HeroSlideData } from "@/components/store/hero-carousel";
+export interface HeroSlideData {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  imageUrl: string;
+  ctaText: string | null;
+  ctaUrl: string | null;
+}
 
 export function StoryScroll({ slides }: { slides: HeroSlideData[] }) {
   if (slides.length === 0) return null;
@@ -21,7 +28,7 @@ export function StoryScroll({ slides }: { slides: HeroSlideData[] }) {
           </p>
           <hr className="my-[2vw] border-none border-t border-white/30" />
           <div>
-            <h2 className="font-heading text-[clamp(1.75rem,5vw,4rem)] font-bold leading-[0.95] uppercase tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
+            <h2 className="font-serif text-[clamp(1.75rem,5vw,4rem)] font-bold leading-[0.95] uppercase tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
               {slide.title}
             </h2>
           </div>
@@ -31,7 +38,7 @@ export function StoryScroll({ slides }: { slides: HeroSlideData[] }) {
             </p>
           ) : null}
           {slide.ctaText && slide.ctaUrl ? (
-            <div className="mt-auto">
+            <div className="mt-auto font-serif">
               <Button asChild variant="secondary" size="default">
                 <Link href={slide.ctaUrl}>{slide.ctaText}</Link>
               </Button>

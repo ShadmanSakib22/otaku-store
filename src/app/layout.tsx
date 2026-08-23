@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const notoSans = Noto_Sans({ subsets: ["latin"], variable: "--font-sans" });
+import { Nunito, Architects_Daughter } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fontSans = Nunito({
   subsets: ["latin"],
+  variable: "--font-sans",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fontSerif = Architects_Daughter({
   subsets: ["latin"],
+  variable: "--font-serif",
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -37,12 +37,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn(
         "h-full",
         "antialiased",
-        geistSans.variable,
-        geistMono.variable,
+        fontSans.variable,
+        fontSerif.variable,
         "font-sans",
-        notoSans.variable,
       )}
     >
+      <head>
+        <script
+          async
+          crossOrigin="anonymous"
+          src="https://tweakcn.com/live-preview.min.js"
+        />
+      </head>
       <body className="min-h-full flex flex-col overflow-x-hidden">
         <ThemeProvider
           attribute="class"
