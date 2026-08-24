@@ -23,7 +23,7 @@ export default async function SearchPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-heading text-3xl font-bold">Search</h1>
+        <h1 className="font-serif text-3xl font-bold">Search</h1>
         <SearchInput />
       </div>
       <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr]">

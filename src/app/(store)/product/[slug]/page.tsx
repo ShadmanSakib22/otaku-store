@@ -44,12 +44,16 @@ export default async function ProductPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-        <ImageGallery images={product.images.map((i) => ({ url: i.url, alt: i.alt }))} />
+        <ImageGallery
+          images={product.images.map((i) => ({ url: i.url, alt: i.alt }))}
+        />
         <div className="space-y-4">
           <div className="space-y-1">
             <Badge variant="outline">{product.category.name}</Badge>
-            <h1 className="font-heading text-3xl font-bold">{product.name}</h1>
-            {authors ? <p className="text-muted-foreground">By {authors}</p> : null}
+            <h1 className="font-serif text-3xl font-bold">{product.name}</h1>
+            {authors ? (
+              <p className="text-muted-foreground">By {authors}</p>
+            ) : null}
           </div>
 
           <ProductVariantClient
@@ -60,23 +64,45 @@ export default async function ProductPage({
           {product.summary ? (
             <p className="text-muted-foreground">{product.summary}</p>
           ) : null}
-          <p className="whitespace-pre-line text-sm leading-relaxed">{product.description}</p>
+          <p className="whitespace-pre-line text-sm leading-relaxed">
+            {product.description}
+          </p>
 
           <div className="flex flex-wrap gap-2">
             {genres.map((genre) => (
-              <Badge key={genre} variant="secondary">{genre}</Badge>
+              <Badge key={genre} variant="secondary">
+                {genre}
+              </Badge>
             ))}
           </div>
 
           {product.publisher ? (
-            <p className="text-sm text-muted-foreground">Publisher: {product.publisher.name}</p>
+            <p className="text-sm text-muted-foreground">
+              Publisher: {product.publisher.name}
+            </p>
           ) : null}
           {product.bookMetadata ? (
             <dl className="grid grid-cols-2 gap-2 text-sm">
-              <dt>Volume</dt><dd>{product.bookMetadata.volume}</dd>
-              {product.bookMetadata.isbn ? <><dt>ISBN</dt><dd>{product.bookMetadata.isbn}</dd></> : null}
-              {product.bookMetadata.language ? <><dt>Language</dt><dd>{product.bookMetadata.language}</dd></> : null}
-              {product.bookMetadata.pageCount ? <><dt>Pages</dt><dd>{product.bookMetadata.pageCount}</dd></> : null}
+              <dt>Volume</dt>
+              <dd>{product.bookMetadata.volume}</dd>
+              {product.bookMetadata.isbn ? (
+                <>
+                  <dt>ISBN</dt>
+                  <dd>{product.bookMetadata.isbn}</dd>
+                </>
+              ) : null}
+              {product.bookMetadata.language ? (
+                <>
+                  <dt>Language</dt>
+                  <dd>{product.bookMetadata.language}</dd>
+                </>
+              ) : null}
+              {product.bookMetadata.pageCount ? (
+                <>
+                  <dt>Pages</dt>
+                  <dd>{product.bookMetadata.pageCount}</dd>
+                </>
+              ) : null}
             </dl>
           ) : null}
         </div>

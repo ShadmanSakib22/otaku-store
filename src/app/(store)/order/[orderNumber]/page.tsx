@@ -18,7 +18,9 @@ export default async function OrderPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="font-heading text-3xl font-bold">Order {order.orderNumber}</h1>
+      <h1 className="font-serif text-3xl font-bold">
+        Order {order.orderNumber}
+      </h1>
       <div className="mt-2 flex items-center gap-2">
         <Badge>{order.paymentStatus}</Badge>
         <Badge variant="secondary">{order.status}</Badge>
@@ -34,7 +36,9 @@ export default async function OrderPage({
         <CardContent className="space-y-3 p-6">
           <p className="font-medium">{order.customerName}</p>
           {order.customerEmail ? (
-            <p className="text-sm text-muted-foreground">{order.customerEmail}</p>
+            <p className="text-sm text-muted-foreground">
+              {order.customerEmail}
+            </p>
           ) : null}
           <p className="text-sm text-muted-foreground">{order.customerPhone}</p>
 
@@ -43,7 +47,9 @@ export default async function OrderPage({
               <p className="font-medium">Pickup</p>
               <p>{order.cashPickup.pickupLocation}</p>
               {order.cashPickup.instructions ? (
-                <p className="text-muted-foreground">{order.cashPickup.instructions}</p>
+                <p className="text-muted-foreground">
+                  {order.cashPickup.instructions}
+                </p>
               ) : null}
             </div>
           ) : null}
@@ -51,7 +57,8 @@ export default async function OrderPage({
             <div className="rounded-lg bg-muted p-4 text-sm">
               <p className="font-medium">Shipping to</p>
               <p>
-                {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                {order.shippingAddress.firstName}{" "}
+                {order.shippingAddress.lastName}
               </p>
               <p>{order.shippingAddress.address1}</p>
               <p>
@@ -67,7 +74,10 @@ export default async function OrderPage({
       <Card className="mt-4">
         <CardContent className="divide-y p-0">
           {order.items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-4 text-sm">
+            <div
+              key={item.id}
+              className="flex items-center justify-between p-4 text-sm"
+            >
               <div>
                 <p className="font-medium">{item.productName}</p>
                 <p className="text-muted-foreground">
@@ -81,7 +91,9 @@ export default async function OrderPage({
           ))}
           <div className="flex items-center justify-between p-4 text-sm">
             <span>Total</span>
-            <span className="font-semibold">{formatPrice(Number(order.total), "JPY")}</span>
+            <span className="font-semibold">
+              {formatPrice(Number(order.total), "JPY")}
+            </span>
           </div>
         </CardContent>
       </Card>

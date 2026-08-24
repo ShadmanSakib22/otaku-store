@@ -34,8 +34,10 @@ export function CartPageClient() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 text-center">
-        <h1 className="font-heading text-2xl font-bold">Your cart is empty</h1>
-        <p className="mt-2 text-muted-foreground">Start with the manga shelf.</p>
+        <h1 className="font-serif text-2xl font-bold">Your cart is empty</h1>
+        <p className="mt-2 text-muted-foreground">
+          Start with the manga shelf.
+        </p>
         <Button asChild className="mt-6">
           <Link href="/manga">Browse Manga</Link>
         </Button>
@@ -47,7 +49,7 @@ export function CartPageClient() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="font-heading text-3xl font-bold">Cart</h1>
+      <h1 className="font-serif text-3xl font-bold">Cart</h1>
       {loading ? (
         <p className="py-8 text-muted-foreground">Updating prices…</p>
       ) : (
@@ -58,21 +60,36 @@ export function CartPageClient() {
                 <CardContent className="flex items-center gap-4 p-4">
                   {line.image ? (
                     <div className="relative aspect-[3/4] w-16 shrink-0 overflow-hidden rounded-md bg-muted">
-                      <Image src={line.image} alt={line.productName} fill sizes="64px" className="object-cover" />
+                      <Image
+                        src={line.image}
+                        alt={line.productName}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
                     </div>
                   ) : null}
                   <div className="flex-1 space-y-0.5">
-                    <Link href={`/product/${line.productSlug}`} className="font-medium hover:underline">
+                    <Link
+                      href={`/product/${line.productSlug}`}
+                      className="font-medium hover:underline"
+                    >
                       {line.productName}
                     </Link>
-                    <p className="text-sm text-muted-foreground">{line.variantName} · {line.sku}</p>
-                    <p className="text-sm">{formatPrice(line.unitPrice, "JPY")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {line.variantName} · {line.sku}
+                    </p>
+                    <p className="text-sm">
+                      {formatPrice(line.unitPrice, "JPY")}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
                       size="icon"
                       variant="outline"
-                      onClick={() => updateQuantity(line.variantId, line.quantity - 1)}
+                      onClick={() =>
+                        updateQuantity(line.variantId, line.quantity - 1)
+                      }
                       aria-label="Decrease quantity"
                     >
                       −
@@ -81,7 +98,9 @@ export function CartPageClient() {
                     <Button
                       size="icon"
                       variant="outline"
-                      onClick={() => updateQuantity(line.variantId, line.quantity + 1)}
+                      onClick={() =>
+                        updateQuantity(line.variantId, line.quantity + 1)
+                      }
                       aria-label="Increase quantity"
                     >
                       +
@@ -104,7 +123,7 @@ export function CartPageClient() {
           <aside>
             <Card>
               <CardContent className="space-y-3 p-6">
-                <h2 className="font-heading text-lg font-semibold">Summary</h2>
+                <h2 className="font-serif text-lg font-semibold">Summary</h2>
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
                   <span>{formatPrice(subtotal, "JPY")}</span>

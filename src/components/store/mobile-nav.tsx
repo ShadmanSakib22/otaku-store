@@ -32,7 +32,7 @@ export function MobileNav() {
       </Button>
       <SheetContent side="left" className="flex flex-col gap-6 p-6">
         <SheetHeader className="gap-1 p-0">
-          <SheetTitle className="flex items-center gap-2 font-heading text-base font-black tracking-tight">
+          <SheetTitle className="flex items-center gap-2 font-serif text-base font-black tracking-tight">
             Otaku Store
           </SheetTitle>
           <SheetDescription>Manga, light novels &amp; merch</SheetDescription>
