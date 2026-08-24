@@ -3,6 +3,8 @@ import { getHeroSlides, getTopSellers } from "@/lib/catalogue";
 import { StoryScroll } from "@/components/store/story-scroll";
 import { ProductGrid } from "@/components/product/product-grid";
 import { RevealSection } from "@/components/store/reveal-section";
+import { FaqAccordion } from "@/components/store/faq-accordion";
+import { Testimonials } from "@/components/store/testimonials";
 import { ArrowRight } from "lucide-react";
 
 export const revalidate = 60;
@@ -78,6 +80,34 @@ export default async function HomePage() {
               </Link>
             </RevealSection>
           ))}
+        </div>
+      </div>
+
+      {/* FAQ + Testimonials */}
+      <div className="bg-secondary/5">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
+          <RevealSection>
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-16">
+              <div>
+                <h2 className="mb-1 text-2xl font-bold tracking-tight md:text-3xl">
+                  Frequently Asked
+                </h2>
+                <p className="mb-6 text-sm text-muted-foreground">
+                  Quick answers to common questions.
+                </p>
+                <FaqAccordion />
+              </div>
+              <div>
+                <h2 className="mb-1 text-2xl font-bold tracking-tight md:text-3xl">
+                  What Customers Say
+                </h2>
+                <p className="mb-6 text-sm text-muted-foreground">
+                  From our community of collectors.
+                </p>
+                <Testimonials />
+              </div>
+            </div>
+          </RevealSection>
         </div>
       </div>
     </>

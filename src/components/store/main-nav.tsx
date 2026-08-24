@@ -27,7 +27,7 @@ export function MainNav({
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center justify-between rounded-xl px-3 py-2.5 text-base font-medium transition-colors",
+                "flex items-center justify-between rounded-none px-3 py-2.5 text-base font-medium transition-colors",
                 isActive
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
@@ -35,7 +35,7 @@ export function MainNav({
             >
               {item.label}
               {isActive ? (
-                <span className="size-1.5 rounded-full bg-primary" />
+                <span className="size-1.5 rounded-none bg-primary" />
               ) : null}
             </Link>
           );
@@ -60,7 +60,7 @@ export function MainNav({
             {item.label}
             <span
               className={cn(
-                "pointer-events-none absolute inset-x-3 -bottom-[3px] h-[2px] scale-x-0 rounded-full bg-primary transition-transform duration-200 ease-out group-hover:scale-x-100",
+                "pointer-events-none absolute inset-x-3 -bottom-[3px] h-[2px] scale-x-0 rounded-none bg-primary transition-transform duration-200 ease-out group-hover:scale-x-100",
                 isActive && "scale-x-100",
               )}
             />

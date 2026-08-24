@@ -4,9 +4,9 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { Nunito, Architects_Daughter } from "next/font/google";
+import { Outfit, Architects_Daughter } from "next/font/google";
 
-const fontSans = Nunito({
+const fontSans = Outfit({
   subsets: ["latin"],
   variable: "--font-sans",
 });

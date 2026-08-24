@@ -231,7 +231,7 @@ export function HeroSlidesManager({
           {items.map((slide, index) => (
             <div
               key={slide.id}
-              className="flex items-center gap-4 rounded-2xl border bg-card p-4"
+              className="flex items-center gap-4 rounded-none border bg-card p-4"
             >
               <div className="flex flex-col gap-1">
                 <Button
@@ -255,7 +255,7 @@ export function HeroSlidesManager({
                   <ChevronDownIcon />
                 </Button>
               </div>
-              <div className="h-16 w-28 shrink-0 overflow-hidden rounded-xl bg-muted">
+              <div className="h-16 w-28 shrink-0 overflow-hidden rounded-none bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={slide.imageUrl} alt="" className="h-full w-full object-cover" />
               </div>
@@ -313,7 +313,7 @@ export function HeroSlidesManager({
               {form.imageUrl ? (
                 <div className="relative mt-2 w-fit">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={form.imageUrl} alt="" className="h-32 w-full rounded-xl object-cover" />
+                  <img src={form.imageUrl} alt="" className="h-32 w-full rounded-none object-cover" />
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">No image selected.</p>

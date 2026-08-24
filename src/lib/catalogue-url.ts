@@ -1,9 +1,11 @@
 import {
   catalogueParamsSchema,
+  parsePriceRange,
   type CatalogueParams,
 } from "@/lib/validation/search";
 
 export type { CatalogueParams };
+export { parsePriceRange };
 
 export const FILTER_KEYS = ["q", "genre", "author", "publisher", "price", "type", "sort"] as const;
 

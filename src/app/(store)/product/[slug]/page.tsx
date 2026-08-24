@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProductBySlug } from "@/lib/catalogue";
+import { getProductBySlug, getSimilarProducts } from "@/lib/catalogue";
 import { ImageGallery } from "@/components/product/image-gallery";
+import { ProductGrid } from "@/components/product/product-grid";
 import { ProductVariantClient } from "./product-client";
 
 export const revalidate = 60;
@@ -39,6 +40,8 @@ export default async function ProductPage({
   const defaultVariant = variants[0];
   const authors = product.authors.map((a) => a.author.name).join(", ");
   const genres = product.genres.map((g) => g.genre.name);
+
+  const similar = await getSimilarProducts(product.id, product.category.slug);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
@@ -95,7 +98,7 @@ export default async function ProductPage({
                 {genres.map((genre) => (
                   <span
                     key={genre}
-                    className="rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium text-secondary-foreground"
+                    className="rounded-none bg-secondary/50 px-3 py-1 text-xs font-medium text-secondary-foreground"
                   >
                     {genre}
                   </span>
@@ -158,6 +161,16 @@ export default async function ProductPage({
           </div>
         </div>
       </div>
+
+      {/* Similar items */}
+      {similar.length > 0 ? (
+        <section className="mt-16 border-t pt-10">
+          <h2 className="mb-6 text-2xl font-bold tracking-tight">
+            You might also like
+          </h2>
+          <ProductGrid products={similar} />
+        </section>
+      ) : null}
     </div>
   );
 }

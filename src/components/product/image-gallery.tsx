@@ -13,7 +13,7 @@ export function ImageGallery({
 
   if (!active)
     return (
-      <div className="aspect-[3/4] rounded-2xl bg-muted" />
+      <div className="aspect-[3/4] rounded-none bg-muted" />
     );
 
   return (
@@ -45,7 +45,7 @@ export function ImageGallery({
       ) : null}
 
       {/* Main image */}
-      <div className="relative min-h-[300px] flex-1 overflow-hidden rounded-2xl bg-muted sm:min-h-[400px]">
+      <div className="relative min-h-[300px] flex-1 overflow-hidden rounded-none bg-muted sm:min-h-[400px]">
         <Image
           src={active.url}
           alt={active.alt ?? ""}

@@ -53,13 +53,13 @@ export function ProductCard({ product }: { product: ProductListItem }) {
         )}
 
         {/* Category pill */}
-        <span className="absolute top-2 left-2 rounded-full bg-background/80 px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm">
+        <span className="absolute top-2 left-2 rounded-none bg-background/80 px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm">
           {product.categorySlug}
         </span>
 
         {/* Stock badge */}
         <span
-          className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm ${STOCK_COLOR[product.stockStatus]}`}
+          className={`absolute top-2 right-2 rounded-none px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm ${STOCK_COLOR[product.stockStatus]}`}
         >
           {STOCK_LABEL[product.stockStatus]}
         </span>

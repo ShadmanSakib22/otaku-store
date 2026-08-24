@@ -1,12 +1,6 @@
 import Link from "next/link";
 import { buildCatalogueUrl, type CatalogueParams } from "@/lib/catalogue";
-import { PRICE_BANDS } from "@/lib/validation/search";
-
-const PRICE_LABELS: Record<string, string> = {
-  "under-500": "Under ¥500",
-  "500-1000": "¥500 - ¥1,000",
-  "1000-plus": "Over ¥1,000",
-};
+import { PriceRangeFilter } from "./price-range-filter";
 
 export function FilterSidebar({
   facets,
@@ -43,14 +37,10 @@ export function FilterSidebar({
         active={params.publisher}
         filterKey="publisher"
       />
-      <FilterGroup
-        title="Price"
-        base={base}
-        params={params}
-        items={PRICE_BANDS.map((b) => ({ value: b, label: PRICE_LABELS[b] }))}
-        active={params.price ?? ""}
-        filterKey="price"
-      />
+      <div className="space-y-2">
+        <h3 className="font-medium">Price Range</h3>
+        <PriceRangeFilter base={base} currentPrice={params.price ?? ""} />
+      </div>
     </aside>
   );
 }
@@ -68,7 +58,7 @@ function FilterGroup({
   params: CatalogueParams;
   items: { value: string; label: string }[];
   active: string;
-  filterKey: "genre" | "author" | "publisher" | "price";
+  filterKey: "genre" | "author" | "publisher";
 }) {
   return (
     <div className="space-y-2">
@@ -80,7 +70,6 @@ function FilterGroup({
             ...(filterKey === "genre" ? { genre: isActive ? "" : item.value } : {}),
             ...(filterKey === "author" ? { author: isActive ? "" : item.value } : {}),
             ...(filterKey === "publisher" ? { publisher: isActive ? "" : item.value } : {}),
-            ...(filterKey === "price" ? { price: (isActive ? undefined : item.value) as CatalogueParams["price"] } : {}),
           });
           return (
             <li key={item.value}>

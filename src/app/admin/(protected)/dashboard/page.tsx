@@ -61,7 +61,7 @@ export default async function AdminDashboardPage() {
           <div key={card.label} className="flex items-center gap-4">
             <div
               className={cn(
-                "flex size-11 shrink-0 items-center justify-center rounded-xl",
+                "flex size-11 shrink-0 items-center justify-center rounded-none",
                 card.tint,
               )}
             >

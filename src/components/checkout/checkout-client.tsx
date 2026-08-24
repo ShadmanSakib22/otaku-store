@@ -172,7 +172,7 @@ export function CheckoutClient() {
                 <button
                   type="button"
                   onClick={() => setMethod("CASH")}
-                  className={`rounded-xl border p-4 text-left ${method === "CASH" ? "border-primary bg-primary/5" : "border-border"}`}
+                  className={`rounded-none border p-4 text-left ${method === "CASH" ? "border-primary bg-primary/5" : "border-border"}`}
                 >
                   <p className="font-semibold">Pay by Cash</p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -182,7 +182,7 @@ export function CheckoutClient() {
                 <button
                   type="button"
                   onClick={() => setMethod("STRIPE")}
-                  className={`rounded-xl border p-4 text-left ${method === "STRIPE" ? "border-primary bg-primary/5" : "border-border"}`}
+                  className={`rounded-none border p-4 text-left ${method === "STRIPE" ? "border-primary bg-primary/5" : "border-border"}`}
                 >
                   <p className="font-semibold">Pay by Stripe</p>
                   <p className="mt-1 text-sm text-muted-foreground">

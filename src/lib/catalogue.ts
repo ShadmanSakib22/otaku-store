@@ -5,10 +5,11 @@ import {
   FILTER_KEYS,
   parseCatalogueParams,
   buildCatalogueUrl,
+  parsePriceRange,
   type CatalogueParams,
 } from "./catalogue-url";
 
-export { FILTER_KEYS, parseCatalogueParams, buildCatalogueUrl };
+export { FILTER_KEYS, parseCatalogueParams, buildCatalogueUrl, parsePriceRange };
 export type { CatalogueParams };
 
 const PAGE_SIZE = 24;
@@ -28,12 +29,16 @@ export async function getCatalogue(
   if (params.publisher) {
     where.publisher = { slug: params.publisher };
   }
-  if (params.price === "under-500") {
-    where.variants = { some: { price: { lt: 500 } } };
-  } else if (params.price === "500-1000") {
-    where.variants = { some: { price: { gte: 500, lte: 1000 } } };
-  } else if (params.price === "1000-plus") {
-    where.variants = { some: { price: { gt: 1000 } } };
+  const priceRange = parsePriceRange(params.price ?? "");
+  if (priceRange.min !== undefined || priceRange.max !== undefined) {
+    where.variants = {
+      some: {
+        price: {
+          ...(priceRange.min !== undefined ? { gte: priceRange.min } : {}),
+          ...(priceRange.max !== undefined ? { lte: priceRange.max } : {}),
+        },
+      },
+    };
   }
 
   const orderBy = priceOrderBy(params.sort);
@@ -160,4 +165,26 @@ export async function getHeroSlides() {
     },
     orderBy: { position: "asc" },
   });
+}
+
+export async function getSimilarProducts(
+  productId: string,
+  categorySlug: string,
+  limit = 4
+) {
+  const products = await prisma.product.findMany({
+    where: {
+      status: "ACTIVE",
+      id: { not: productId },
+      category: { slug: categorySlug },
+    },
+    orderBy: { lifetimeSales: "desc" },
+    take: limit,
+    include: {
+      category: true,
+      images: { orderBy: { position: "asc" }, take: 1 },
+      variants: { include: { inventory: true }, orderBy: { price: "asc" } },
+    },
+  });
+  return products.map(toProductListItem);
 }
