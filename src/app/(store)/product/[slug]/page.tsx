@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/catalogue";
 import { ImageGallery } from "@/components/product/image-gallery";
-import { Badge } from "@/components/ui/badge";
 import { ProductVariantClient } from "./product-client";
 
 export const revalidate = 60;
@@ -42,69 +41,121 @@ export default async function ProductPage({
   const genres = product.genres.map((g) => g.genre.name);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-        <ImageGallery
-          images={product.images.map((i) => ({ url: i.url, alt: i.alt }))}
-        />
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Badge variant="outline">{product.category.name}</Badge>
-            <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
+    <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-12">
+        {/* Image - takes 7 cols on desktop */}
+        <div className="md:col-span-7">
+          <ImageGallery
+            images={product.images.map((i) => ({ url: i.url, alt: i.alt }))}
+          />
+        </div>
+
+        {/* Product info - takes 5 cols, sticky on desktop */}
+        <div className="md:col-span-5">
+          <div className="md:sticky md:top-24">
+            {/* Category */}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {product.category.name}
+            </p>
+
+            {/* Title */}
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+              {product.name}
+            </h1>
+
+            {/* Authors */}
             {authors ? (
-              <p className="text-muted-foreground">By {authors}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                by {authors}
+              </p>
+            ) : null}
+
+            {/* Summary */}
+            {product.summary ? (
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                {product.summary}
+              </p>
+            ) : null}
+
+            {/* Divider */}
+            <div className="my-6 border-t" />
+
+            {/* Variant picker + Price + CTA */}
+            <ProductVariantClient
+              variants={variants}
+              defaultVariantId={defaultVariant?.id ?? ""}
+            />
+
+            {/* Divider */}
+            <div className="my-6 border-t" />
+
+            {/* Genres */}
+            {genres.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {genres.map((genre) => (
+                  <span
+                    key={genre}
+                    className="rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium text-secondary-foreground"
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Description */}
+            {product.description ? (
+              <div className="mt-6">
+                <h2 className="mb-2 text-sm font-semibold">Description</h2>
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                  {product.description}
+                </p>
+              </div>
+            ) : null}
+
+            {/* Book metadata */}
+            {product.bookMetadata ? (
+              <div className="mt-6 rounded-lg border bg-muted/30 p-4">
+                <h2 className="mb-3 text-sm font-semibold">Details</h2>
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                  {product.publisher ? (
+                    <>
+                      <dt className="text-muted-foreground">Publisher</dt>
+                      <dd className="font-medium">{product.publisher.name}</dd>
+                    </>
+                  ) : null}
+                  <dt className="text-muted-foreground">Volume</dt>
+                  <dd className="font-medium">
+                    {product.bookMetadata.volume}
+                  </dd>
+                  {product.bookMetadata.isbn ? (
+                    <>
+                      <dt className="text-muted-foreground">ISBN</dt>
+                      <dd className="font-medium">
+                        {product.bookMetadata.isbn}
+                      </dd>
+                    </>
+                  ) : null}
+                  {product.bookMetadata.language ? (
+                    <>
+                      <dt className="text-muted-foreground">Language</dt>
+                      <dd className="font-medium">
+                        {product.bookMetadata.language}
+                      </dd>
+                    </>
+                  ) : null}
+                  {product.bookMetadata.pageCount ? (
+                    <>
+                      <dt className="text-muted-foreground">Pages</dt>
+                      <dd className="font-medium">
+                        {product.bookMetadata.pageCount}
+                      </dd>
+                    </>
+                  ) : null}
+                </dl>
+              </div>
             ) : null}
           </div>
-
-          <ProductVariantClient
-            variants={variants}
-            defaultVariantId={defaultVariant?.id ?? ""}
-          />
-
-          {product.summary ? (
-            <p className="text-muted-foreground">{product.summary}</p>
-          ) : null}
-          <p className="whitespace-pre-line text-sm leading-relaxed">
-            {product.description}
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {genres.map((genre) => (
-              <Badge key={genre} variant="secondary">
-                {genre}
-              </Badge>
-            ))}
-          </div>
-
-          {product.publisher ? (
-            <p className="text-sm text-muted-foreground">
-              Publisher: {product.publisher.name}
-            </p>
-          ) : null}
-          {product.bookMetadata ? (
-            <dl className="grid grid-cols-2 gap-2 text-sm">
-              <dt>Volume</dt>
-              <dd>{product.bookMetadata.volume}</dd>
-              {product.bookMetadata.isbn ? (
-                <>
-                  <dt>ISBN</dt>
-                  <dd>{product.bookMetadata.isbn}</dd>
-                </>
-              ) : null}
-              {product.bookMetadata.language ? (
-                <>
-                  <dt>Language</dt>
-                  <dd>{product.bookMetadata.language}</dd>
-                </>
-              ) : null}
-              {product.bookMetadata.pageCount ? (
-                <>
-                  <dt>Pages</dt>
-                  <dd>{product.bookMetadata.pageCount}</dd>
-                </>
-              ) : null}
-            </dl>
-          ) : null}
         </div>
       </div>
     </div>

@@ -11,7 +11,15 @@ export function ProductVariantClient({
   variants,
   defaultVariantId,
 }: {
-  variants: { id: string; name: string; size: string | null; color: string | null; price: number; quantity: number; lowStockAt: number }[];
+  variants: {
+    id: string;
+    name: string;
+    size: string | null;
+    color: string | null;
+    price: number;
+    quantity: number;
+    lowStockAt: number;
+  }[];
   defaultVariantId: string;
 }) {
   const [variantId, setVariantId] = useState(defaultVariantId);
@@ -25,16 +33,23 @@ export function ProductVariantClient({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-2xl font-bold">{formatPrice(variant.price, "JPY")}</p>
+    <div className="space-y-5">
+      {/* Price */}
+      <div className="flex items-center gap-3">
+        <p className="text-3xl font-bold tracking-tight">
+          {formatPrice(variant.price, "JPY")}
+        </p>
         <StockBadge status={status} />
       </div>
+
+      {/* Variants */}
       <VariantPicker
         variants={variants}
         selectedId={variant.id}
         onSelect={setVariantId}
       />
+
+      {/* Add to cart */}
       <AddToCart variantId={variant.id} disabled={status === "OUT_OF_STOCK"} />
     </div>
   );

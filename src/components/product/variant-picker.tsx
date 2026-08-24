@@ -22,22 +22,31 @@ export function VariantPicker({
   selectedId: string;
   onSelect: (id: string) => void;
 }) {
+  if (variants.length <= 1) return null;
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {variants.map((variant) => {
-        const disabled = deriveStockStatus(variant.quantity, variant.lowStockAt) === "OUT_OF_STOCK";
-        return (
-          <Button
-            key={variant.id}
-            type="button"
-            variant={variant.id === selectedId ? "default" : "outline"}
-            disabled={disabled}
-            onClick={() => onSelect(variant.id)}
-          >
-            {variant.name}
-          </Button>
-        );
-      })}
+    <div className="space-y-2">
+      <p className="text-sm font-medium">Edition</p>
+      <div className="flex flex-wrap gap-2">
+        {variants.map((variant) => {
+          const disabled =
+            deriveStockStatus(variant.quantity, variant.lowStockAt) ===
+            "OUT_OF_STOCK";
+          const selected = variant.id === selectedId;
+          return (
+            <Button
+              key={variant.id}
+              type="button"
+              variant={selected ? "default" : "outline"}
+              disabled={disabled}
+              onClick={() => onSelect(variant.id)}
+              className="min-w-[4rem]"
+            >
+              {variant.name}
+            </Button>
+          );
+        })}
+      </div>
     </div>
   );
 }
