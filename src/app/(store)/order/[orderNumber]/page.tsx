@@ -18,7 +18,7 @@ export default async function OrderPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="font-serif text-3xl font-bold">
+      <h1 className="text-3xl font-bold tracking-tight">
         Order {order.orderNumber}
       </h1>
       <div className="mt-2 flex items-center gap-2">

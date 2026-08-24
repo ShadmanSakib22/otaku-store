@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { CartButton } from "./cart-button";
+import { CartDrawer } from "./cart-drawer";
 import { ThemeSwitcher } from "./theme-switcher";
 import { HeaderSearch } from "./header-search";
 import { MainNav } from "./main-nav";
@@ -7,6 +11,8 @@ import { MobileNav } from "./mobile-nav";
 import { Sparkle } from "lucide-react";
 
 export function SiteHeader() {
+  const [cartOpen, setCartOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 shadow bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
@@ -24,10 +30,12 @@ export function SiteHeader() {
           <div className="hidden md:block">
             <HeaderSearch />
           </div>
-          <CartButton />
+          <CartButton onClick={() => setCartOpen(true)} />
           <ThemeSwitcher />
         </div>
       </div>
+
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
     </header>
   );
 }

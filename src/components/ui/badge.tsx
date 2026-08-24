@@ -40,7 +40,7 @@ function Badge({
     <Comp
       data-slot="badge"
       data-variant={variant}
-      className={cn(badgeVariants({ variant }), "font-serif", className)}
+      className={cn(badgeVariants({ variant }), className)}
       {...props}
     />
   );

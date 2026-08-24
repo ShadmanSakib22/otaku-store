@@ -24,7 +24,7 @@ export default async function CategoryPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-serif text-3xl font-bold">{title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         <SortSelect params={params} base={base} />
       </div>
       <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr]">

@@ -33,7 +33,7 @@ export async function createCheckoutSession({
     })),
     metadata: { orderId: order.id },
     success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/cart`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/`,
   });
 
   return session;

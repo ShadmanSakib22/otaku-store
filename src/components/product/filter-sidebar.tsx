@@ -4,7 +4,7 @@ import { PRICE_BANDS } from "@/lib/validation/search";
 
 const PRICE_LABELS: Record<string, string> = {
   "under-500": "Under ¥500",
-  "500-1000": "¥500 – ¥1,000",
+  "500-1000": "¥500 - ¥1,000",
   "1000-plus": "Over ¥1,000",
 };
 

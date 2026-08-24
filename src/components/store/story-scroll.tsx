@@ -24,7 +24,7 @@ export function StoryScroll({ slides }: { slides: HeroSlideData[] }) {
           backgroundImage={slide.imageUrl}
         >
           <p className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-white/80">
-            {String(i + 1).padStart(2, "0")} — Featured
+            {String(i + 1).padStart(2, "0")} / Featured
           </p>
           <hr className="my-[2vw] border-none border-t border-white/30" />
           <div>
