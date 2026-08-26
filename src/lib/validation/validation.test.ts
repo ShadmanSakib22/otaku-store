@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { cashCheckoutSchema, catalogueParamsSchema } from ".";
+import { cashCheckoutSchema } from "./checkout";
+import { catalogueParamsSchema } from "./search";
 
 describe("cashCheckoutSchema", () => {
   it("rejects missing name", () => {
