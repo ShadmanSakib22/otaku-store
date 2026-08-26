@@ -120,26 +120,33 @@ const FlowSection: React.FC<FlowSectionProps> = ({
     aria-label={ariaLabel}
     className={cx("relative min-h-screen w-full overflow-hidden", className)}
   >
-    {backgroundImage ? (
-      <div aria-hidden className="absolute inset-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={backgroundImage}
-          alt=""
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/25" />
-      </div>
-    ) : null}
     <div
-      data-flow-inner
       className={cx(
-        "flow-art-container relative flex min-h-screen w-full flex-col justify-between gap-6 px-[4vw] pt-[clamp(2rem,8vw,4vw)] pb-[4vw]",
+        "flow-art-container relative min-h-screen w-full",
         "will-change-transform",
       )}
       style={{ transformOrigin: "bottom left", ...style }}
     >
-      {children}
+      {backgroundImage ? (
+        <div aria-hidden className="absolute inset-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={backgroundImage}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          {/* even, mild darkening so the whole frame reads a touch moodier */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/15 to-black/15" />
+          {/* vignette anchored where the text sits (bottom-left), for extra contrast right behind the copy */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_110%_85%_at_0%_100%,rgba(0,0,0,0.55),transparent_62%)]" />
+        </div>
+      ) : null}
+      <div
+        data-flow-inner
+        className="relative z-10 flex min-h-screen w-full flex-col justify-between gap-6 px-[4vw] pt-[clamp(2rem,8vw,4vw)] pb-[4vw]"
+      >
+        {children}
+      </div>
     </div>
   </section>
 );
