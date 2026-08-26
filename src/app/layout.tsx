@@ -22,8 +22,8 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   ),
   title: {
-    default: "Otaku Store",
-    template: "%s | Otaku Store",
+    default: "OtakuYa",
+    template: "%s | OtakuYa",
   },
   description:
     "A Japanese pop-culture store: manga, light novels and merchandise.",

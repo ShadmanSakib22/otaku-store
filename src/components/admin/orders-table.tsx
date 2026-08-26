@@ -1,12 +1,15 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { formatPrice } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/admin/data-table";
 import { DataTableColumnHeader } from "@/components/admin/data-table-column-header";
+import { OrdersBulkActions } from "@/components/admin/orders-bulk-actions";
 import type { DataTableConfig, PaginationState, DataTableFilter } from "@/lib/admin-table-types";
 import type { LegacyColumnDef } from "@tanstack/react-table/legacy";
+import type { RowSelectionState } from "@tanstack/react-table";
 
 export interface AdminOrderRow {
   id: string;
@@ -124,6 +127,9 @@ const filters: DataTableFilter[] = [
 ];
 
 export function OrdersTable({ data, pagination, searchParams }: OrdersTableProps) {
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
+
   const config: DataTableConfig<AdminOrderRow> = {
     columns,
     data,
@@ -137,5 +143,23 @@ export function OrdersTable({ data, pagination, searchParams }: OrdersTableProps
     enableBulkActions: true,
   };
 
-  return <DataTable config={config} />;
+  return (
+    <div className="space-y-4">
+      <OrdersBulkActions
+        selectedIds={selectedIds}
+        pageRowCount={data.length}
+        filter={{
+          ...(searchParams.status ? { status: searchParams.status } : {}),
+          ...(searchParams.paymentStatus ? { paymentStatus: searchParams.paymentStatus } : {}),
+          ...(searchParams.sort ? { sort: searchParams.sort } : {}),
+        }}
+        onClearSelection={() => setRowSelection({})}
+      />
+      <DataTable
+        config={config}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
+      />
+    </div>
+  );
 }

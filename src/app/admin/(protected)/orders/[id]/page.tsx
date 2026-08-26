@@ -13,8 +13,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OrderStatusSelect } from "@/components/admin/order-status-select";
+import { PaymentStatusSelect } from "@/components/admin/payment-status-select";
 import { markPickedUpAction } from "@/lib/actions/order-actions";
-import { OrderStatus } from "@/generated/prisma/client";
+import { OrderStatus, PaymentStatus } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,11 @@ export default async function AdminOrderDetailPage({
             orderId={order.id}
             currentStatus={order.status}
             orderStatuses={Object.values(OrderStatus)}
+          />
+          <PaymentStatusSelect
+            orderId={order.id}
+            currentStatus={order.paymentStatus}
+            paymentStatuses={Object.values(PaymentStatus)}
           />
         </div>
       </div>

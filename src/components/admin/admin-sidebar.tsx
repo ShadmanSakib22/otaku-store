@@ -55,7 +55,7 @@ export function AdminSidebar({
                   <StoreIcon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Otaku Store</span>
+                  <span className="truncate font-medium">OtakuYa</span>
                   <span className="truncate text-xs">Admin Panel</span>
                 </div>
               </Link>
@@ -91,7 +91,7 @@ export function AdminSidebar({
           role={role}
           user={{
             name: "Admin",
-            email: "admin@otaku-store.com",
+            email: "admin@otakuya.com",
             avatar: "",
           }}
         />
