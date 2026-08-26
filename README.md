@@ -8,7 +8,7 @@ A Japanese pop-culture e-commerce store selling manga, light novels, and merchan
 - **Guest checkout** — no accounts required; pay by **cash on pickup** or **card via Stripe** (webhook-finalized orders).
 - **Order confirmation** — confirmation page per order plus a transactional email via Resend.
 - **Search** — Algolia-powered full-text search with filters and sorting.
-- **Admin CMS** — protected dashboard for products, inventory, orders, and homepage hero slides, with ADMIN / DEMO_ADMIN roles (jose-signed sessions).
+- **Admin CMS** — protected dashboard for products, inventory, orders, and homepage hero slides, with ADMIN / DEMO_ADMIN roles (jose-signed sessions, layout-level guard).
 
 ## Tech Stack
 
@@ -57,7 +57,7 @@ Copy `example.env` to `.env` and fill in real values:
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token — placeholder |
 | `NEXT_PUBLIC_APP_URL` | Public URL of the app (Stripe return URLs, absolute email links) |
 
-> `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `BLOB_READ_WRITE_TOKEN` ship as placeholders — the store still runs with them blank until you configure the corresponding service.
+> `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `BLOB_READ_WRITE_TOKEN` must be set (even as placeholder values) or the app will error on import.
 
 ### Database, seed, and dev server
 
@@ -107,7 +107,7 @@ Create a Blob store and paste its read/write token into `BLOB_READ_WRITE_TOKEN` 
 
 Log in at `/admin/login`. The seed creates:
 
-- `admin@example.com` / `Admin123!` (full `ADMIN` role)
+- `admin@example.com` (full `ADMIN` role, password in seed file)
 - `demo@example.com` / `Demo123!` (`DEMO_ADMIN` role)
 
 To create another admin, insert an `adminUser` row with a bcryptjs-hashed password, e.g.:
@@ -132,7 +132,7 @@ pnpm exec tsx -e "const { hash } = require('bcryptjs'); hash('YourPass123!', 12)
 
 ## Architecture
 
-The storefront is a Next.js 16 App Router app under `src/app`: catalogue pages (`/manga`, `/light-novels`, `/merchandise`, `/product/[slug]`), guest checkout (`/cart`, `/checkout`, `/order/[orderNumber]`), search (`/search`), and a protected admin under `/admin` with route-level session guards. Server actions and API routes handle checkout, Stripe payments (`/api/checkout`, `/api/payment-session`, `/api/webhooks/stripe`), and search indexing. Prisma talks to Neon PostgreSQL via the `@prisma/adapter-neon` driver adapter.
+The storefront is a Next.js 16 App Router app under `src/app`: catalogue pages (`/manga`, `/light-novels`, `/merchandise`, `/product/[slug]`), guest checkout (`/checkout`, `/order/[orderNumber]`), search (`/search`), and a protected admin under `/admin` with a layout-level session guard. Server actions and API routes handle checkout, Stripe payments (`/api/checkout`, `/api/payment-session`, `/api/webhooks/stripe`), and search indexing. Prisma talks to Neon PostgreSQL via the `@prisma/adapter-neon` driver adapter. The cart is a client-side drawer (Zustand + localStorage), not a page route.
 
 For details, see the docs:
 

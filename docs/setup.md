@@ -234,7 +234,7 @@ The seed creates two admin users — log in at `/admin/login`:
 
 | Role | Email | Password |
 | --- | --- | --- |
-| `ADMIN` | `admin@example.com` | `Admin123!` |
+| `ADMIN` | `admin@example.com` | See seed file |
 | `DEMO_ADMIN` | `demo@example.com` | `Demo123!` |
 
 `ADMIN` can do everything (including deleting products/slides). `DEMO_ADMIN` is read-mostly: destructive operations like product deletion, inventory edits, and hero-slide deletion require `ADMIN`.
