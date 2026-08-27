@@ -11,7 +11,7 @@ export function SiteFooter() {
         <p>
           &copy;{" "}
           <Link
-            href="https://github.com/shadmansakib22"
+            href="https://github.com/ShadmanSakib22/otaku-store"
             target="_blank"
             rel="noopener noreferrer"
             className="transition-colors hover:text-foreground"

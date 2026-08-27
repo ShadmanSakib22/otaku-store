@@ -23,6 +23,7 @@ import {
   ShoppingCartIcon,
   HomeIcon,
   StoreIcon,
+  Settings,
 } from "lucide-react";
 
 const navItems = [
@@ -51,9 +52,7 @@ export function AdminSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/admin/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <StoreIcon className="size-4" />
-                </div>
+                <Settings className="size-6!" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">OtakuYa</span>
                   <span className="truncate text-xs">Admin Panel</span>
