@@ -11,6 +11,7 @@ import {
 import { SalesByTypeChart } from "@/components/admin/dashboard/sales-by-type-chart";
 import { SalesOverTimeChart } from "@/components/admin/dashboard/sales-over-time-chart";
 import { SalesByAuthorChart } from "@/components/admin/dashboard/sales-by-author-chart";
+import { CleanupButton } from "@/components/admin/cleanup-button";
 
 export const revalidate = 30;
 
@@ -55,7 +56,10 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-bold">Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-heading text-2xl font-bold">Dashboard</h1>
+        <CleanupButton />
+      </div>
       <div className="flex flex-wrap items-center gap-6 md:gap-10 mx-2">
         {cards.map((card) => (
           <div key={card.label} className="flex items-center gap-4">
@@ -82,8 +86,8 @@ export default async function AdminDashboardPage() {
       <SalesOverTimeChart data={sales.byDay} />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <SalesByTypeChart data={sales.byType} />
-        <SalesByAuthorChart data={sales.byAuthor} />
+        <SalesByTypeChart data={sales.byType} dayData={sales.byDayType} allDays={sales.byDay} />
+        <SalesByAuthorChart data={sales.byAuthor} dayData={sales.byDayAuthor} allDays={sales.byDay} />
       </div>
     </div>
   );

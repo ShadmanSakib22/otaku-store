@@ -206,11 +206,13 @@ export interface DashboardSales {
   byType: { type: string; revenue: number }[];
   byDay: { date: string; revenue: number }[];
   byAuthor: { id: string; name: string; revenue: number }[];
+  byDayType: { date: string; type: string; revenue: number }[];
+  byDayAuthor: { date: string; authorId: string; authorName: string; revenue: number }[];
 }
 
-export async function getDashboardSales(): Promise<DashboardSales> {
+export async function getDashboardSales(days = 90): Promise<DashboardSales> {
   const since = new Date();
-  since.setDate(since.getDate() - 29);
+  since.setDate(since.getDate() - (days - 1));
   since.setHours(0, 0, 0, 0);
 
   const orders = await prisma.order.findMany({
@@ -246,13 +248,15 @@ export async function getDashboardSales(): Promise<DashboardSales> {
   const typeMap = new Map(byType.map((t) => [t.type, t]));
 
   const dayMap = new Map<string, number>();
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < days; i++) {
     const d = new Date(since);
     d.setDate(d.getDate() + i);
     dayMap.set(d.toISOString().slice(0, 10), 0);
   }
 
   const byAuthor = new Map<string, { id: string; name: string; revenue: number }>();
+  const byDayType = new Map<string, number>();
+  const byDayAuthor = new Map<string, number>();
 
   for (const order of orders) {
     const dayKey = order.createdAt?.toISOString().slice(0, 10);
@@ -261,6 +265,8 @@ export async function getDashboardSales(): Promise<DashboardSales> {
       const product = item.variant?.product;
       if (product?.type && typeMap.has(product.type)) {
         typeMap.get(product.type)!.revenue += revenue;
+        const dtKey = `${dayKey}:${product.type}`;
+        byDayType.set(dtKey, (byDayType.get(dtKey) ?? 0) + revenue);
       }
       if (dayKey && dayMap.has(dayKey)) {
         dayMap.set(dayKey, dayMap.get(dayKey)! + revenue);
@@ -271,6 +277,8 @@ export async function getDashboardSales(): Promise<DashboardSales> {
           { id: author.id, name: author.name, revenue: 0 };
         existing.revenue += revenue;
         byAuthor.set(author.id, existing);
+        const daKey = `${dayKey}:${author.id}`;
+        byDayAuthor.set(daKey, (byDayAuthor.get(daKey) ?? 0) + revenue);
       }
     }
   }
@@ -280,5 +288,72 @@ export async function getDashboardSales(): Promise<DashboardSales> {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 10);
 
-  return { byType, byDay, byAuthor: byAuthorArr };
+  const byDayTypeArr = [...byDayType.entries()].map(([key, revenue]) => {
+    const [date, type] = key.split(":");
+    return { date, type, revenue };
+  });
+
+  const byDayAuthorArr = [...byDayAuthor.entries()].map(([key, revenue]) => {
+    const [date, authorId] = key.split(":");
+    const author = byAuthor.get(authorId);
+    return { date, authorId, authorName: author?.name ?? "", revenue };
+  });
+
+  return { byType, byDay, byAuthor: byAuthorArr, byDayType: byDayTypeArr, byDayAuthor: byDayAuthorArr };
+}
+
+export async function deleteOldOrders(olderThanDays = 90) {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - olderThanDays);
+  cutoff.setHours(0, 0, 0, 0);
+
+  const oldOrders = await prisma.order.findMany({
+    where: { createdAt: { lt: cutoff } },
+    select: {
+      id: true,
+      items: {
+        select: {
+          variantId: true,
+          quantity: true,
+        },
+      },
+    },
+  });
+
+  if (oldOrders.length === 0) {
+    return { deleted: 0, salesRestored: 0 };
+  }
+
+  const variantSalesDelta = new Map<string, number>();
+  for (const order of oldOrders) {
+    for (const item of order.items) {
+      if (item.variantId) {
+        variantSalesDelta.set(
+          item.variantId,
+          (variantSalesDelta.get(item.variantId) ?? 0) + item.quantity,
+        );
+      }
+    }
+  }
+
+  await prisma.order.deleteMany({
+    where: { createdAt: { lt: cutoff } },
+  });
+
+  let salesRestored = 0;
+  for (const [variantId, qty] of variantSalesDelta) {
+    const variant = await prisma.productVariant.findUnique({
+      where: { id: variantId },
+      select: { productId: true },
+    });
+    if (variant) {
+      await prisma.product.update({
+        where: { id: variant.productId },
+        data: { lifetimeSales: { decrement: qty } },
+      });
+      salesRestored += qty;
+    }
+  }
+
+  return { deleted: oldOrders.length, salesRestored };
 }
