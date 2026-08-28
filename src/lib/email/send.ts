@@ -3,6 +3,10 @@ import { cashPickupEmail, orderConfirmationEmail } from "@/lib/email/templates";
 import type { CartLine } from "@/lib/cart";
 
 async function send({ to, subject, html }: { to: string; subject: string; html: string }) {
+  if (!resend) {
+    console.error("RESEND_API_KEY is not set; skipping email send");
+    return;
+  }
   try {
     await resend.emails.send({ from: emailFrom, to, subject, html });
   } catch (error) {

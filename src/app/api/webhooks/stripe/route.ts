@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as { id: string };
+    console.log("Processing checkout.session.completed for session", session.id);
     const result = await handleCheckoutSessionCompleted(session.id);
+    console.log("Webhook handling result:", JSON.stringify(result));
     if (result && !result.processed && result.reason === "no_payment") {
       return Response.json(
         { error: "No payment record found for session" },
