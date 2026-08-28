@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PrintButton } from "@/components/checkout/print-button";
+import { ClearCartOnMount } from "@/components/checkout/clear-cart-on-mount";
 import { ClipboardCopyIcon } from "lucide-react";
 
 export const metadata: Metadata = { title: "Order Confirmation" };
@@ -24,6 +25,7 @@ export default async function OrderPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 print:py-4">
+      <ClearCartOnMount />
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
