@@ -15,7 +15,6 @@ export interface CheckoutAddress {
 }
 
 export interface CheckoutCustomerInfo {
-  name: string;
   email: string;
   phone: string;
   address?: CheckoutAddress;
@@ -28,7 +27,6 @@ interface CheckoutState {
 }
 
 const defaultCustomer: CheckoutCustomerInfo = {
-  name: "",
   email: "",
   phone: "",
 };

@@ -15,6 +15,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Stepper } from "@/components/ui/stepper";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeftIcon, BanknoteIcon, CreditCardIcon, ShoppingCartIcon } from "lucide-react";
 
@@ -32,14 +39,39 @@ const ADDRESS_FIELDS: {
   required: boolean;
   full?: boolean;
 }[] = [
-  { key: "firstName", label: "First name", required: true },
-  { key: "lastName", label: "Last name", required: true },
   { key: "address1", label: "Address line 1", required: true, full: true },
   { key: "address2", label: "Address line 2", required: false, full: true },
   { key: "city", label: "City", required: true },
   { key: "state", label: "State", required: true },
   { key: "postalCode", label: "Postal code", required: true },
-  { key: "country", label: "Country", required: true },
+];
+
+const COUNTRIES: { code: string; name: string }[] = [
+  { code: "JP", name: "Japan" },
+  { code: "US", name: "United States" },
+  { code: "CA", name: "Canada" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "AU", name: "Australia" },
+  { code: "DE", name: "Germany" },
+  { code: "FR", name: "France" },
+  { code: "KR", name: "South Korea" },
+  { code: "CN", name: "China" },
+  { code: "TW", name: "Taiwan" },
+  { code: "SG", name: "Singapore" },
+  { code: "HK", name: "Hong Kong" },
+  { code: "PH", name: "Philippines" },
+  { code: "TH", name: "Thailand" },
+  { code: "MY", name: "Malaysia" },
+  { code: "ID", name: "Indonesia" },
+  { code: "VN", name: "Vietnam" },
+  { code: "IN", name: "India" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "MX", name: "Mexico" },
+  { code: "BR", name: "Brazil" },
+  { code: "IT", name: "Italy" },
+  { code: "ES", name: "Spain" },
+  { code: "NL", name: "Netherlands" },
+  { code: "SE", name: "Sweden" },
 ];
 
 export function CheckoutClient() {
@@ -48,6 +80,11 @@ export function CheckoutClient() {
   const clearCart = useCartStore((state) => state.clearCart);
   const customer = useCheckoutStore((state) => state.customer);
   const setCustomer = useCheckoutStore((state) => state.setCustomer);
+
+  const updateAddress = (patch: Partial<CheckoutAddress>) =>
+    setCustomer({
+      address: { ...customer.address, ...patch } as CheckoutAddress,
+    });
 
   const [step, setStep] = useState(1);
   const [method, setMethod] = useState<Method>("CASH");
@@ -98,12 +135,13 @@ export function CheckoutClient() {
     const loadingId = toast.loading("Placing your order…");
     setSubmitting(true);
     try {
+      const fullName = `${customer.address?.firstName ?? ""} ${customer.address?.lastName ?? ""}`.trim();
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
-          name: customer.name,
+          name: fullName,
           phone: customer.phone,
           email: customer.email,
           termsAccepted: terms,
@@ -128,12 +166,13 @@ export function CheckoutClient() {
     const loadingId = toast.loading("Redirecting to payment…");
     setSubmitting(true);
     try {
+      const fullName = `${customer.address?.firstName ?? ""} ${customer.address?.lastName ?? ""}`.trim();
       const res = await fetch("/api/payment-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
-          customerName: customer.name,
+          customerName: fullName,
           email: customer.email,
           phone: customer.phone,
           termsAccepted: terms,
@@ -153,13 +192,18 @@ export function CheckoutClient() {
     }
   }
 
-  const addressComplete = ADDRESS_FIELDS.filter((f) => f.required).every(
-    (f) => (customer.address?.[f.key] ?? "").trim() !== "",
+  const nameComplete = Boolean(
+    (customer.address?.firstName ?? "").trim() &&
+      (customer.address?.lastName ?? "").trim(),
   );
+  const addressComplete =
+    ADDRESS_FIELDS.filter((f) => f.required).every(
+      (f) => (customer.address?.[f.key] ?? "").trim() !== "",
+    ) && Boolean((customer.address?.country ?? "").trim());
   const canSubmit =
     method === "CASH"
-      ? Boolean(customer.name && customer.phone)
-      : Boolean(customer.name && customer.phone && customer.email) &&
+      ? Boolean(nameComplete && customer.phone)
+      : Boolean(nameComplete && customer.phone && customer.email) &&
         addressComplete;
 
   return (
@@ -281,11 +325,23 @@ export function CheckoutClient() {
               <CardContent className="flex flex-col gap-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="w-full">
-                    <Label htmlFor="name">Full name *</Label>
+                    <Label htmlFor="firstName">First name *</Label>
                     <Input
-                      id="name"
-                      value={customer.name}
-                      onChange={(e) => setCustomer({ name: e.target.value })}
+                      id="firstName"
+                      value={customer.address?.firstName ?? ""}
+                      onChange={(e) =>
+                        updateAddress({ firstName: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="w-full">
+                    <Label htmlFor="lastName">Last name *</Label>
+                    <Input
+                      id="lastName"
+                      value={customer.address?.lastName ?? ""}
+                      onChange={(e) =>
+                        updateAddress({ lastName: e.target.value })
+                      }
                     />
                   </div>
                   <div className="w-full">
@@ -328,16 +384,33 @@ export function CheckoutClient() {
                             id={`address-${f.key}`}
                             value={customer.address?.[f.key] ?? ""}
                             onChange={(e) =>
-                              setCustomer({
-                                address: {
-                                  ...customer.address!,
-                                  [f.key]: e.target.value,
-                                },
-                              })
+                              updateAddress({
+                                [f.key]: e.target.value,
+                              } as Partial<CheckoutAddress>)
                             }
                           />
                         </div>
                       ))}
+                      <div className="w-full">
+                        <Label htmlFor="address-country">Country *</Label>
+                        <Select
+                          value={customer.address?.country ?? ""}
+                          onValueChange={(value) =>
+                            updateAddress({ country: value })
+                          }
+                        >
+                          <SelectTrigger id="address-country" className="w-full">
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COUNTRIES.map((c) => (
+                              <SelectItem key={c.code} value={c.code}>
+                                {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </>
                 ) : null}
