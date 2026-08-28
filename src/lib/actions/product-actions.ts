@@ -1,13 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { put } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/db/client";
 import { requireAdmin, requireRole } from "@/lib/auth/guard";
 import { productFormSchema } from "@/lib/validation/admin";
 import { indexProduct, deleteProductFromIndex } from "@/lib/search/sync";
 import { buildProductWhere } from "@/lib/admin-queries";
 import { Prisma, type ProductType, type ProductStatus } from "@/generated/prisma/client";
+
+function filterBlobUrls(urls: string[]): string[] {
+  return urls.filter((url) => /^https?:\/\/.+/.test(url) && !url.includes("placehold.co"));
+}
 
 export type BulkTarget =
   | { mode: "ids"; ids: string[] }
@@ -33,7 +37,12 @@ export async function bulkDeleteProductsAction(target: BulkTarget) {
   const ids = await resolveProductIds(target);
   if (ids.length === 0) return { error: "No products selected" };
 
+  const images = await prisma.productImage.findMany({ where: { productId: { in: ids } }, select: { url: true } });
   await prisma.product.deleteMany({ where: { id: { in: ids } } });
+  const blobUrls = filterBlobUrls(images.map((img) => img.url));
+  if (blobUrls.length) {
+    await del(blobUrls);
+  }
   await Promise.all(ids.map((id) => deleteProductFromIndex(id)));
 
   revalidatePath("/admin/products");
@@ -101,7 +110,12 @@ export async function uploadImageAction(formData: FormData) {
 
 export async function deleteProductAction(id: string) {
   await requireRole("ADMIN");
+  const images = await prisma.productImage.findMany({ where: { productId: id }, select: { url: true } });
   await prisma.product.delete({ where: { id } });
+  const blobUrls = filterBlobUrls(images.map((img) => img.url));
+  if (blobUrls.length) {
+    await del(blobUrls);
+  }
   await deleteProductFromIndex(id);
   revalidatePath("/admin/products");
   revalidatePath("/");
@@ -110,7 +124,7 @@ export async function deleteProductAction(id: string) {
 export async function saveProductAction(formData: FormData) {
   await requireAdmin();
   const raw: Record<string, unknown> = Object.fromEntries(formData);
-  for (const key of ["genres", "authors", "imageUrls", "variants"] as const) {
+  for (const key of ["genres", "authors", "imageUrls", "initialImageUrls", "variants"] as const) {
     const value = raw[key];
     if (typeof value === "string") {
       try {
@@ -174,6 +188,12 @@ export async function saveProductAction(formData: FormData) {
       },
     });
     id = product.id;
+  }
+
+  const initialUrls = Array.isArray(raw.initialImageUrls) ? (raw.initialImageUrls as string[]) : [];
+  const removedUrls = filterBlobUrls(initialUrls.filter((url) => !data.imageUrls.includes(url)));
+  if (removedUrls.length) {
+    await del(removedUrls);
   }
 
   await prisma.productImage.deleteMany({ where: { productId: id } });

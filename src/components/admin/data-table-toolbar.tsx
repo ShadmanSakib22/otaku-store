@@ -10,9 +10,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { XIcon } from "lucide-react";
+import { XIcon, SearchIcon } from "lucide-react";
 import type { DataTableFilter } from "@/lib/admin-table-types";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 interface DataTableToolbarProps {
   filters?: DataTableFilter[];
@@ -33,15 +33,6 @@ export function DataTableToolbar({
 
   const initialValue = searchParams.get(searchKey ?? "q") ?? "";
   const [searchValue, setSearchValue] = useState(initialValue);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const urlValue = searchParams.get(searchKey ?? "q") ?? "";
@@ -64,12 +55,15 @@ export function DataTableToolbar({
     [router, pathname, searchParams, searchKey]
   );
 
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      pushSearch(value);
-    }, 300);
+  const handleSearchSubmit = useCallback(() => {
+    pushSearch(searchValue);
+  }, [pushSearch, searchValue]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearchSubmit();
+    }
   };
 
   const handleFilterChange = (filterId: string, value: string) => {
@@ -93,12 +87,23 @@ export function DataTableToolbar({
   return (
     <div className="flex items-center gap-2">
       {searchKey && (
-        <Input
-          placeholder={searchPlaceholder}
-          value={searchValue}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="h-8 w-[150px] lg:w-[250px]"
-        />
+        <div className="flex items-center">
+          <Input
+            placeholder={searchPlaceholder}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="h-8 w-[150px] lg:w-[250px]"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 ml-1"
+            onClick={handleSearchSubmit}
+          >
+            <SearchIcon className="h-4 w-4" />
+          </Button>
+        </div>
       )}
       {filters?.map((filter) => (
         <Select

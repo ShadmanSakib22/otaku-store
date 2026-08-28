@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { ChevronDownIcon, ChevronUpIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -117,6 +117,7 @@ export function HeroSlidesManager({
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const originalImageUrlRef = useRef<string | null>(null);
 
   const set = (key: keyof SlideForm, value: string | boolean) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -124,12 +125,14 @@ export function HeroSlidesManager({
 
   const openNew = () => {
     setForm(emptyForm());
+    originalImageUrlRef.current = null;
     setError("");
     setOpen(true);
   };
 
   const openEdit = (slide: HeroSlideRow) => {
     setForm(fromSlide(slide));
+    originalImageUrlRef.current = slide.imageUrl;
     setError("");
     setOpen(true);
   };
@@ -165,6 +168,7 @@ export function HeroSlidesManager({
     fd.append("startsAt", form.startsAt);
     fd.append("endsAt", form.endsAt);
     if (form.id) fd.append("id", form.id);
+    if (originalImageUrlRef.current) fd.append("originalImageUrl", originalImageUrlRef.current);
 
     startTransition(async () => {
       const res = await saveHeroSlideAction(fd);

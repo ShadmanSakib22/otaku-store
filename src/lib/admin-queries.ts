@@ -65,7 +65,7 @@ export function buildProductWhere({
   type?: string;
 } = {}) {
   const where: Record<string, unknown> = {};
-  if (q) where.OR = [{ name: { contains: q } }, { slug: { contains: q } }];
+  if (q) where.OR = [{ name: { contains: q, mode: "insensitive" } }, { slug: { contains: q, mode: "insensitive" } }];
   if (status) where.status = status;
   if (type) where.type = type;
   return where;
@@ -170,7 +170,7 @@ export async function getInventory({
   pageSize?: number;
 }) {
   const where = q
-    ? { OR: [{ variant: { sku: { contains: q } } }, { variant: { product: { name: { contains: q } } } }] }
+    ? { OR: [{ variant: { sku: { contains: q, mode: "insensitive" as const } } }, { variant: { product: { name: { contains: q, mode: "insensitive" as const } } } }] }
     : {};
 
   const orderBy = parseSortParam(sort, VALID_INVENTORY_SORT_FIELDS) as Record<string, "asc" | "desc">;

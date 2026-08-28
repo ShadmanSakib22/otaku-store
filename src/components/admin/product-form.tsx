@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { saveProductAction, uploadImageAction } from "@/lib/actions/product-actions";
+import { Trash2 } from "lucide-react";
 
 export interface ProductFormOptions {
   categories: { id: string; name: string }[];
@@ -104,6 +105,7 @@ function fromInitial(initial?: ProductFormValues | null): ProductFormValues {
 
 export function ProductForm({ categories, publishers, genres, authors, initial }: ProductFormOptions & { initial?: ProductFormValues | null }) {
   const [form, setForm] = useState<ProductFormValues>(() => fromInitial(initial) as ProductFormValues);
+  const initialImageUrlsRef = useRef<string[]>(initial?.imageUrls ?? []);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -178,6 +180,7 @@ export function ProductForm({ categories, publishers, genres, authors, initial }
     fd.append("genres", JSON.stringify(form.genres));
     fd.append("authors", JSON.stringify(form.authors));
     fd.append("imageUrls", JSON.stringify(form.imageUrls));
+    fd.append("initialImageUrls", JSON.stringify(initialImageUrlsRef.current));
     fd.append("variants", JSON.stringify(finalVariants));
     if (form.id) fd.append("id", form.id);
     if (form.volume != null) fd.append("volume", String(form.volume));
@@ -333,7 +336,7 @@ export function ProductForm({ categories, publishers, genres, authors, initial }
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="" className="h-24 w-24 rounded-lg object-cover" />
                 <Button type="button" variant="destructive" size="xs" className="absolute -top-2 -right-2" onClick={() => removeImage(url)}>
-                  Remove
+                  <Trash2 className="size-3" />
                 </Button>
               </div>
             ))}
