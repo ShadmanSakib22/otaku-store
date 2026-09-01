@@ -143,7 +143,7 @@ const FlowSection: React.FC<FlowSectionProps> = ({
       ) : null}
       <div
         data-flow-inner
-        className="relative z-10 flex min-h-screen w-full flex-col justify-between gap-6 px-[4vw] pt-[clamp(2rem,8vw,4vw)] pb-[4vw]"
+        className="relative z-10 flex min-h-screen w-full flex-col justify-between gap-6 pt-[clamp(2rem,8vw,4vw)] pb-[4vw]"
       >
         {children}
       </div>

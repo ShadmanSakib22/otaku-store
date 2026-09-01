@@ -36,7 +36,7 @@ export function StoryScroll({ slides }: { slides: HeroSlideData[] }) {
               </span>
 
               <div
-                className="relative bg-black/55 px-6 py-10 sm:px-14 sm:py-14"
+                className="relative bg-black/45 px-4 py-10 sm:px-12 sm:py-14"
                 style={{
                   maskImage:
                     "linear-gradient(to right, transparent, black 6%, black 94%, transparent)",
