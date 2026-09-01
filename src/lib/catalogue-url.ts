@@ -7,7 +7,7 @@ import {
 export type { CatalogueParams };
 export { parsePriceRange };
 
-export const FILTER_KEYS = ["q", "genre", "author", "publisher", "price", "type", "sort"] as const;
+export const FILTER_KEYS = ["q", "genre", "author", "publisher", "language", "size", "color", "price", "type", "sort"] as const;
 
 export function parseCatalogueParams(
   searchParams: Record<string, string | string[] | undefined>
@@ -44,6 +44,9 @@ export function buildCatalogueUrl(
     genre: overrides.genre ?? params.genre ?? "",
     author: overrides.author ?? params.author ?? "",
     publisher: overrides.publisher ?? params.publisher ?? "",
+    language: overrides.language ?? params.language ?? "",
+    size: overrides.size ?? params.size ?? "",
+    color: overrides.color ?? params.color ?? "",
     type: overrides.type ?? params.type ?? "",
     price:
       Object.prototype.hasOwnProperty.call(overrides, "price") &&

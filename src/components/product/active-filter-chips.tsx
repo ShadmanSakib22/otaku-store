@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { buildCatalogueUrl, type CatalogueParams } from "@/lib/catalogue-url";
 
 export type ActiveFilter = {
-  key: "genre" | "author" | "publisher" | "price";
+  key: "genre" | "author" | "publisher" | "language" | "size" | "color" | "price";
   label: string;
 };
 
@@ -13,11 +13,18 @@ export function buildActiveFilters(
     genres: { slug: string; name: string }[];
     authors: { slug: string; name: string }[];
     publishers: { slug: string; name: string }[];
+    categories: { slug: string; name: string }[];
+    languages: { value: string; label: string }[];
+    sizes: { value: string; label: string }[];
+    colors: { value: string; label: string }[];
   }
 ): ActiveFilter[] {
   const filters: ActiveFilter[] = [];
   if (params.genre) {
-    const name = facets.genres.find((g) => g.slug === params.genre)?.name ?? params.genre;
+    const name =
+      facets.genres.find((g) => g.slug === params.genre)?.name ??
+      facets.categories.find((c) => c.slug === params.genre)?.name ??
+      params.genre;
     filters.push({ key: "genre", label: name });
   }
   if (params.author) {
@@ -28,6 +35,19 @@ export function buildActiveFilters(
     const name =
       facets.publishers.find((p) => p.slug === params.publisher)?.name ?? params.publisher;
     filters.push({ key: "publisher", label: name });
+  }
+  if (params.language) {
+    const name =
+      facets.languages.find((l) => l.value === params.language)?.label ?? params.language;
+    filters.push({ key: "language", label: name });
+  }
+  if (params.size) {
+    const name = facets.sizes.find((s) => s.value === params.size)?.label ?? params.size;
+    filters.push({ key: "size", label: name });
+  }
+  if (params.color) {
+    const name = facets.colors.find((c) => c.value === params.color)?.label ?? params.color;
+    filters.push({ key: "color", label: name });
   }
   if (params.price) {
     const [min, max] = params.price.split("-");

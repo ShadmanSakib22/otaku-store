@@ -9,6 +9,7 @@ export default async function MangaPage({
     base: "/manga",
     categorySlug: "manga",
     title: "Manga",
+    type: "MANGA",
     searchParams,
   });
 }

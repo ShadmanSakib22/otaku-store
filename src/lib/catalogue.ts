@@ -29,16 +29,27 @@ export async function getCatalogue(
   if (params.publisher) {
     where.publisher = { slug: params.publisher };
   }
+  if (params.language) {
+    where.bookMetadata = { language: params.language };
+  }
+  const variantFilters: Prisma.ProductVariantWhereInput[] = [];
+  if (params.size) {
+    variantFilters.push({ size: params.size });
+  }
+  if (params.color) {
+    variantFilters.push({ color: params.color });
+  }
   const priceRange = parsePriceRange(params.price ?? "");
   if (priceRange.min !== undefined || priceRange.max !== undefined) {
-    where.variants = {
-      some: {
-        price: {
-          ...(priceRange.min !== undefined ? { gte: priceRange.min } : {}),
-          ...(priceRange.max !== undefined ? { lte: priceRange.max } : {}),
-        },
+    variantFilters.push({
+      price: {
+        ...(priceRange.min !== undefined ? { gte: priceRange.min } : {}),
+        ...(priceRange.max !== undefined ? { lte: priceRange.max } : {}),
       },
-    };
+    });
+  }
+  if (variantFilters.length > 0) {
+    where.variants = { some: { AND: variantFilters } };
   }
 
   const orderBy = priceOrderBy(params.sort);
@@ -132,13 +143,112 @@ export async function getProductBySlug(slug: string) {
   });
 }
 
-export async function getFacets() {
-  const [genres, authors, publishers] = await Promise.all([
-    prisma.genre.findMany({ select: { slug: true, name: true }, orderBy: { name: "asc" } }),
-    prisma.author.findMany({ select: { slug: true, name: true }, orderBy: { name: "asc" } }),
-    prisma.publisher.findMany({ select: { slug: true, name: true }, orderBy: { name: "asc" } }),
+export async function getFacets(type?: ProductType) {
+  const where: Prisma.ProductWhereInput = { status: "ACTIVE" };
+  if (type) where.type = type;
+
+  if (type === "MERCH") {
+    const [categories, variants] = await Promise.all([
+      prisma.category.findMany({
+        select: { slug: true, name: true },
+        where: { products: { some: where } },
+        orderBy: { name: "asc" },
+      }),
+      prisma.productVariant.findMany({
+        select: { size: true, color: true },
+        where: { product: where },
+      }),
+    ]);
+    const sizeSet = [...new Set(variants.map((v) => v.size).filter(Boolean))].sort();
+    const colorSet = [...new Set(variants.map((v) => v.color).filter(Boolean))].sort();
+    return {
+      genres: [],
+      authors: [],
+      publishers: [],
+      categories,
+      languages: [],
+      sizes: sizeSet.map((s) => ({ value: s!, label: s! })),
+      colors: colorSet.map((c) => ({ value: c!, label: c! })),
+    };
+  }
+
+  if (type === "MANGA" || type === "LIGHT_NOVEL") {
+    const [genres, authors, publishers, bookMeta] = await Promise.all([
+      prisma.genre.findMany({
+        select: { slug: true, name: true },
+        where: { products: { some: { product: where } } },
+        orderBy: { name: "asc" },
+      }),
+      prisma.author.findMany({
+        select: { slug: true, name: true },
+        where: { products: { some: { product: where } } },
+        orderBy: { name: "asc" },
+      }),
+      prisma.publisher.findMany({
+        select: { slug: true, name: true },
+        where: { products: { some: where } },
+        orderBy: { name: "asc" },
+      }),
+      prisma.bookMetadata.findMany({
+        select: { language: true },
+        where: { product: where },
+      }),
+    ]);
+    const languageSet = [...new Set(bookMeta.map((b) => b.language))].sort();
+    return {
+      genres,
+      authors,
+      publishers,
+      categories: [],
+      languages: languageSet.map((l) => ({ value: l, label: l })),
+      sizes: [],
+      colors: [],
+    };
+  }
+
+  const allWhere: Prisma.ProductWhereInput = { status: "ACTIVE" };
+  const [genres, authors, publishers, bookMeta, categories, variants] = await Promise.all([
+    prisma.genre.findMany({
+      select: { slug: true, name: true },
+      where: { products: { some: { product: allWhere } } },
+      orderBy: { name: "asc" },
+    }),
+    prisma.author.findMany({
+      select: { slug: true, name: true },
+      where: { products: { some: { product: allWhere } } },
+      orderBy: { name: "asc" },
+    }),
+    prisma.publisher.findMany({
+      select: { slug: true, name: true },
+      where: { products: { some: allWhere } },
+      orderBy: { name: "asc" },
+    }),
+    prisma.bookMetadata.findMany({
+      select: { language: true },
+      where: { product: allWhere },
+    }),
+    prisma.category.findMany({
+      select: { slug: true, name: true },
+      where: { products: { some: allWhere } },
+      orderBy: { name: "asc" },
+    }),
+    prisma.productVariant.findMany({
+      select: { size: true, color: true },
+      where: { product: allWhere },
+    }),
   ]);
-  return { genres, authors, publishers };
+  const languageSet = [...new Set(bookMeta.map((b) => b.language))].sort();
+  const sizeSet = [...new Set(variants.map((v) => v.size).filter(Boolean))].sort();
+  const colorSet = [...new Set(variants.map((v) => v.color).filter(Boolean))].sort();
+  return {
+    genres,
+    authors,
+    publishers,
+    categories,
+    languages: languageSet.map((l) => ({ value: l, label: l })),
+    sizes: sizeSet.map((s) => ({ value: s!, label: s! })),
+    colors: colorSet.map((c) => ({ value: c!, label: c! })),
+  };
 }
 
 export async function getTopSellers(type: ProductType, limit = 8) {

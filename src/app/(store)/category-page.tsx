@@ -8,17 +8,19 @@ export default async function CategoryPage({
   base,
   categorySlug,
   title,
+  type,
   searchParams,
 }: {
   base: string;
   categorySlug: string;
   title: string;
+  type?: "MANGA" | "LIGHT_NOVEL" | "MERCH";
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = parseCatalogueParams(await searchParams);
   const [result, facets] = await Promise.all([
     getCatalogue(params, categorySlug),
-    getFacets(),
+    getFacets(type),
   ]);
 
   return (
@@ -28,7 +30,7 @@ export default async function CategoryPage({
         <SortSelect params={params} base={base} />
       </div>
       <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr]">
-        <FilterSidebar facets={facets} params={params} base={base} />
+        <FilterSidebar facets={facets} params={params} base={base} type={type} />
         <div>
           <p className="mb-4 text-sm text-muted-foreground">
             {result.total} result{result.total === 1 ? "" : "s"}

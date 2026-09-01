@@ -9,6 +9,7 @@ export default async function MerchandisePage({
     base: "/merchandise",
     categorySlug: "merchandise",
     title: "Merchandise",
+    type: "MERCH",
     searchParams,
   });
 }

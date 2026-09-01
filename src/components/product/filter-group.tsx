@@ -24,7 +24,7 @@ export function FilterGroup({
   params: CatalogueParams;
   items: { value: string; label: string }[];
   active: string;
-  filterKey: "genre" | "author" | "publisher";
+  filterKey: "genre" | "author" | "publisher" | "language" | "size" | "color";
   defaultOpen?: boolean;
 }) {
   const [query, setQuery] = useState("");

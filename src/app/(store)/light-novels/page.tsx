@@ -9,6 +9,7 @@ export default async function LightNovelsPage({
     base: "/light-novels",
     categorySlug: "light-novels",
     title: "Light Novels",
+    type: "LIGHT_NOVEL",
     searchParams,
   });
 }
