@@ -54,7 +54,7 @@ Page 3
 Example:
 
 ```text
-/manga?q=one-piece&genre=action&author=oda&minPrice=5&maxPrice=20&sort=price-asc&page=2
+/manga?q=one-piece&genre=action&author=oda&price=500-2000&sort=price-asc&page=2
 ```
 
 URL state makes results shareable and supports browser navigation.
@@ -77,46 +77,48 @@ The search engine applies these before returning the page.
 
 ## 6. Manga Filters
 
-Potential filters:
+Active filters:
 
 ```text
-Price
-Author
 Genre
+Author
 Publisher
-Volume
-Release date
-Availability
+Language
+Price
 ```
 
 ## 7. Light Novel Filters
 
-Potential filters:
+Active filters:
 
 ```text
-Price
-Author
 Genre
+Author
 Publisher
-Volume
-Release date
-Availability
+Language
+Price
 ```
 
 ## 8. Merchandise Filters
 
-Potential filters:
+Active filters:
 
 ```text
-Price
-Merchandise type
-Brand/creator
+Category
 Size
 Color
-Availability
+Price
 ```
 
-Only useful filters should be exposed.
+## 8a. Search Page Filters
+
+The search page exposes all filters across product types:
+
+```text
+Genre, Author, Publisher, Language, Category, Size, Color, Price
+```
+
+Empty filter groups are hidden automatically.
 
 ## 9. Pagination
 

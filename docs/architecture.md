@@ -330,7 +330,7 @@ Catalogue search/filter state should be represented in the URL.
 Example:
 
 ```text
-/manga?q=one-piece&genre=action&author=oda&sort=price-asc&page=2
+/manga?q=one-piece&genre=action&author=oda&price=500-2000&sort=price-asc&page=2
 ```
 
 When filters change, reset pagination to page 1.
