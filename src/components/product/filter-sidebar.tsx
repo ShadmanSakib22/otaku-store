@@ -1,18 +1,29 @@
-import Link from "next/link";
-import { buildCatalogueUrl, type CatalogueParams } from "@/lib/catalogue";
+import { buildCatalogueUrl, type CatalogueParams } from "@/lib/catalogue-url";
 import { PriceRangeFilter } from "./price-range-filter";
+import { FilterGroup } from "./filter-group";
+import { FilterSection } from "./filter-section";
+import { ActiveFilterChips, buildActiveFilters } from "./active-filter-chips";
+import { MobileFilterSheet } from "./mobile-filter-sheet";
+
+type Facets = {
+  genres: { slug: string; name: string }[];
+  authors: { slug: string; name: string }[];
+  publishers: { slug: string; name: string }[];
+};
 
 export function FilterSidebar({
   facets,
   params,
   base,
 }: {
-  facets: { genres: { slug: string; name: string }[]; authors: { slug: string; name: string }[]; publishers: { slug: string; name: string }[] };
+  facets: Facets;
   params: CatalogueParams;
   base: string;
 }) {
-  return (
-    <aside className="space-y-6 text-sm">
+  const activeFilters = buildActiveFilters(params, facets);
+
+  const panel = (
+    <div>
       <FilterGroup
         title="Genre"
         base={base}
@@ -20,6 +31,7 @@ export function FilterSidebar({
         items={facets.genres.map((g) => ({ value: g.slug, label: g.name }))}
         active={params.genre}
         filterKey="genre"
+        defaultOpen
       />
       <FilterGroup
         title="Author"
@@ -28,6 +40,7 @@ export function FilterSidebar({
         items={facets.authors.map((a) => ({ value: a.slug, label: a.name }))}
         active={params.author}
         filterKey="author"
+        defaultOpen={!!params.author}
       />
       <FilterGroup
         title="Publisher"
@@ -36,53 +49,50 @@ export function FilterSidebar({
         items={facets.publishers.map((p) => ({ value: p.slug, label: p.name }))}
         active={params.publisher}
         filterKey="publisher"
+        defaultOpen={!!params.publisher}
       />
-      <div className="space-y-2">
-        <h3 className="font-medium">Price Range</h3>
+      <FilterSection
+        title="Price Range"
+        defaultOpen
+        onClear={
+          params.price
+            ? buildCatalogueUrl(base, params, { price: "" })
+            : undefined
+        }
+      >
         <PriceRangeFilter base={base} currentPrice={params.price ?? ""} />
-      </div>
-    </aside>
-  );
-}
-
-function FilterGroup({
-  title,
-  base,
-  params,
-  items,
-  active,
-  filterKey,
-}: {
-  title: string;
-  base: string;
-  params: CatalogueParams;
-  items: { value: string; label: string }[];
-  active: string;
-  filterKey: "genre" | "author" | "publisher";
-}) {
-  return (
-    <div className="space-y-2">
-      <h3 className="font-medium">{title}</h3>
-      <ul className="space-y-1">
-        {items.map((item) => {
-          const isActive = active === item.value;
-          const href = buildCatalogueUrl(base, params, {
-            ...(filterKey === "genre" ? { genre: isActive ? "" : item.value } : {}),
-            ...(filterKey === "author" ? { author: isActive ? "" : item.value } : {}),
-            ...(filterKey === "publisher" ? { publisher: isActive ? "" : item.value } : {}),
-          });
-          return (
-            <li key={item.value}>
-              <Link
-                href={href}
-                className={isActive ? "font-semibold text-primary" : "text-muted-foreground hover:text-foreground"}
-              >
-                {item.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      </FilterSection>
     </div>
+  );
+
+  return (
+    <>
+      {/* Mobile: trigger button + bottom sheet, shown below md */}
+      <div className="md:hidden">
+        <MobileFilterSheet activeCount={activeFilters.length}>
+          {panel}
+        </MobileFilterSheet>
+        <ActiveFilterChips
+          base={base}
+          params={params}
+          filters={activeFilters}
+        />
+      </div>
+
+      {/* Desktop: sticky sidebar, shown at md and up */}
+      <aside className="hidden text-sm md:block">
+        <div className="sticky top-20">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground">
+            Filters
+          </h2>
+          <ActiveFilterChips
+            base={base}
+            params={params}
+            filters={activeFilters}
+          />
+          {panel}
+        </div>
+      </aside>
+    </>
   );
 }
